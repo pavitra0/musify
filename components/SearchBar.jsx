@@ -10,13 +10,13 @@ export default function SearchBar({ onSearch }) {
     }
   }
   return (
-    <form onSubmit={submit} className="w-full max-w-xl flex mt-12">
+    <form onSubmit={submit} className="text-left w-full max-w-xl flex mt-12">
       <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Search for songs, artists, albums…"
-        className="flex-1 px-4 py-2 rounded-l-md bg-gray-800 border-none text-lg outline-none"
+        className="text-white  flex-1 px-4 py-2 rounded-l-md border-none text-lg outline-none"
       />
       
     </form>

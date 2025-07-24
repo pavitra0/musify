@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ColorThief from "color-thief-browser";
+import { useParams, useRouter } from "next/navigation";
 import { Howl } from "howler";
+import ColorThief from "color-thief-browser";
 import {
   Heart,
   SkipBack,
@@ -10,58 +11,76 @@ import {
   Pause,
   SkipForward,
   Repeat,
-  Music,
-  Menu,
   Download,
+  ChevronDown,
+  ChevronUp,
+  X,
 } from "lucide-react";
+import { fetchSongSuggestions } from "@/actions/fetchingSongs";
+import { motion, AnimatePresence, animate } from "framer-motion";
 
-function lightenColor(rgb, factor = 0.1) {
-  return rgb.map((c) => Math.min(255, Math.floor(c + (255 - c) * factor)));
+function formatTime(seconds) {
+  if (isNaN(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${mins}:${secs}`;
 }
 
-function darkenColor(rgb, factor = 0.1) {
+function lighten(rgb, factor = 0.35) {
+  return rgb.map((c) => Math.min(255, Math.floor(c + (255 - c) * factor)));
+}
+function darken(rgb, factor = 0.5) {
   return rgb.map((c) => Math.max(0, Math.floor(c * (1 - factor))));
 }
 
-function formatTime(sec) {
-  if (isNaN(sec)) return "0:00";
-  const min = Math.floor(sec / 60);
-  const secLeft = Math.floor(sec % 60);
-  return `${min}:${String(secLeft).padStart(2, "0")}`;
-}
-
 export default function Player({ song, audioSrc }) {
+  const params = useParams();
   const imgRef = useRef(null);
   const soundRef = useRef(null);
   const intervalRef = useRef(null);
 
-  const [bgColor, setBgColor] = useState("#1e293b");
-  const [accentColor, setAccentColor] = useState("#334155");
+  const router = useRouter();
+
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+  const [bgColor, setBgColor] = useState("#1e293b");
+  const [accentColor, setAccentColor] = useState("#334155");
+  const [suggestions, setSuggestions] = useState([]);
 
+  // Load suggestions based on ID
   useEffect(() => {
-    if (!imgRef.current) return;
+    async function func() {
+      if (!params.id) return;
+      const results = await fetchSongSuggestions(params.id);
+      setSuggestions(results);
+    }
+    func();
+  }, [params.id]);
 
+  // Set up color extraction from image
+  useEffect(() => {
     const img = imgRef.current;
+    if (!img) return;
 
     const handleLoad = () => {
       try {
         const color = new ColorThief().getColor(img);
-        const dark = darkenColor(color, 0.55);
-        const light = lightenColor(color, 0.55);
+        const dark = darken(color);
+        const light = lighten(color);
         const bg = `rgb(${dark.join(",")})`;
         const accent = `rgb(${light.join(",")})`;
 
         setBgColor(bg);
         setAccentColor(accent);
 
-        // Set CSS variables globally (optional for other components)
         document.documentElement.style.setProperty("--bg-color", bg);
         document.documentElement.style.setProperty("--accent-color", accent);
-      } catch (err) {
-        console.error("ColorThief error:", err);
+      } catch (e) {
+        console.error("ColorThief error", e);
       }
     };
 
@@ -72,6 +91,7 @@ export default function Player({ song, audioSrc }) {
     }
   }, [song?.image?.[1]?.url]);
 
+  // Initialize sound
   useEffect(() => {
     if (!audioSrc) return;
 
@@ -91,32 +111,28 @@ export default function Player({ song, audioSrc }) {
     return () => sound.unload();
   }, [audioSrc]);
 
-  const togglePlay = () => {
-    const sound = soundRef.current;
-    if (!sound) return;
-
-    if (isPlaying) {
-      sound.pause();
-    } else {
-      sound.play();
-    }
-
-    setIsPlaying(!isPlaying);
-  };
-
+  // Handle playing
   useEffect(() => {
     if (!isPlaying || !soundRef.current) return;
 
     intervalRef.current = setInterval(() => {
       const current = soundRef.current.seek();
-      const rounded = Math.floor(current);
-      if (rounded !== Math.floor(position)) {
-        setPosition(current);
-      }
+      setPosition(current);
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [isPlaying, position]);
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    if (!soundRef.current) return;
+
+    if (isPlaying) {
+      soundRef.current.pause();
+    } else {
+      soundRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   const handleSeek = (e) => {
     const time = parseFloat(e.target.value);
@@ -127,30 +143,29 @@ export default function Player({ song, audioSrc }) {
   };
 
   const handleDownload = () => {
-    if (!audioSrc) return;
-
     const link = document.createElement("a");
     link.href = audioSrc;
     link.setAttribute("download", `${song?.name || "song"}.mp3`);
-    link.setAttribute("target", `_blank`);
-    link.style.display = "none";
+    link.setAttribute("target", "_blank");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  console.log(suggestions);
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-between text-white px-6 py-10 transition-colors duration-700"
       style={{
-        background: bgColor,
+        background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
       }}
     >
       {/* Hidden image for ColorThief */}
       <img
         ref={imgRef}
         src={song?.image?.[1]?.url || "/placeholder.jpg"}
-        alt="Color source"
+        alt="ColorThief Image"
         className="hidden"
         crossOrigin="anonymous"
       />
@@ -158,16 +173,15 @@ export default function Player({ song, audioSrc }) {
       {/* Cover */}
       <img
         src={song?.image?.[2]?.url || "/placeholder.jpg"}
-        alt={song?.title || "Song cover"}
-        className="w-82 h-82 mt-14 rounded-xl object-cover shadow-lg"
+        alt={song?.title || "Cover"}
+        className="w-80 h-80 mt-14 rounded-xl object-cover shadow-lg"
       />
 
       {/* Title & Artist */}
-      <div className="text-center gap-2 mt-8">
+      <div className="text-center mt-8">
         <h2 className="text-2xl font-bold">{song?.name}</h2>
-        <p className="text-gray-300">
-          {song?.artists?.primary?.map((s) => s.name).join(", ") ||
-            "Unknown Artist"}
+        <p className="text-gray-300 text-sm">
+          {song?.artists?.primary?.map((s) => s.name).join(", ") || "Unknown"}
         </p>
       </div>
 
@@ -184,43 +198,113 @@ export default function Player({ song, audioSrc }) {
           value={position}
           step="0.5"
           onChange={handleSeek}
-          className="w-full h-3 appearance-none rounded-lg outline-none"
-          style={{
-            background: accentColor,
-            color: "white",
-          }}
+          className="w-full h-2 rounded-lg outline-none"
+          style={{ background: accentColor }}
         />
       </div>
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-8 mt-6">
-        <Heart size={24} color={accentColor} className="cursor-pointer" />
-        <SkipBack size={30} color={accentColor} className="cursor-pointer" />
-        <div
-          className={`bg-white/20 rounded-${
-            isPlaying ? "full" : "lg"
-          } w-14 h-14 flex items-center justify-center shadow-lg cursor-pointer transition-all`}
+        <Heart size={22} color={accentColor} className="cursor-pointer" />
+        <SkipBack size={28} color={accentColor} className="cursor-pointer" />
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          animate={{
+            borderRadius: isPlaying ? "12px" : "50%", // morph shape
+            width: isPlaying ? "56px" : "56px", // w-16 vs w-14
+            height: isPlaying ? "56px" : "56px", // h-10 vs h-14
+            backgroundColor: isPlaying
+              ? "rgba(255,255,255,0.3)"
+              : "rgba(255,255,255,0.2)",
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={togglePlay}
+          className="flex items-center justify-center cursor-pointer text-white"
         >
           {isPlaying ? (
-            <Pause size={30} color={accentColor} />
+            <Pause size={26} color={accentColor} />
           ) : (
-            <Play size={30} color={accentColor} />
+            <Play size={28} color={accentColor} />
           )}
-        </div>
-        <SkipForward size={30} color={accentColor} className="cursor-pointer" />
-        <Repeat size={22} color={accentColor} className="cursor-pointer" />
+        </motion.button>
+
+        <SkipForward size={28} color={accentColor} className="cursor-pointer" />
+        <Repeat size={20} color={accentColor} className="cursor-pointer" />
       </div>
 
       {/* Bottom Bar */}
-      <div className="w-full flex justify-center gap-6 text-white mt-6">
+      <div className="mt-6">
         <Download
           size={24}
           color={accentColor}
-          className="cursor-pointer"
           onClick={handleDownload}
+          className="cursor-pointer"
         />
       </div>
+      {/* Toggle Arrow */}
+      <div
+        onClick={() => setShowSuggestions(!showSuggestions)}
+        className="mt-8 cursor-pointer"
+      >
+        {showSuggestions ? (
+          <ChevronDown size={28} color={accentColor} />
+        ) : (
+          <ChevronUp size={28} color={accentColor} />
+        )}
+      </div>
+
+      {/* Suggestions Panel */}
+      <AnimatePresence>
+        {showSuggestions && (
+          <motion.div
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
+            className="fixed bottom-0 left-0 w-full max-h-[80vh] overflow-y-auto z-50 backdrop-blur-md bg-white/5 border-t border-white/10 rounded-t-2xl p-5 shadow-[0_-2px_30px_rgba(0,0,0,0.3)]"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-white tracking-wide">
+                You Might Also Like
+              </h3>
+              <button
+                onClick={() => setShowSuggestions(false)}
+                className="text-gray-300 hover:text-white transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {suggestions.map((sugg) => (
+                <div
+                  key={sugg.id}
+                  className="flex items-center gap-4 bg-white/10 hover:bg-white/15 transition p-3 rounded-lg shadow-md cursor-pointer"
+                  onClick={() => router.push(`/search/${sugg.id}`)}
+                >
+                  <img
+                    src={sugg.image?.[1]?.url || sugg.image?.[0]?.url}
+                    alt={sugg.title}
+                    className="w-16 h-16 object-cover rounded-md"
+                  />
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-white font-medium truncate">
+                      {sugg.name}
+                    </p>
+                    <p className="text-gray-300 text-sm truncate">
+                      {sugg?.artists?.primary[0].name || "Unknown Artist"}
+                    </p>
+                  </div>
+                  <button className="text-white/70 hover:text-white">
+                    <Play className="w-6 h-6" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
