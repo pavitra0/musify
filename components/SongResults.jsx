@@ -5,14 +5,15 @@ import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useColorTheme } from "./ColorThemeContext";
 
-export default function SearchResults({ data }) {
+export default function SearchResults({ data = [] }) {
   const router = useRouter();
+  // const [colors, setColor] = useColorTheme();
 
-  const [colors,setColor] = useColorTheme()
-  console.log(colors)
-
-  if (!data )
+  // Safeguard: If data is not an array
+  if (!Array.isArray(data)) {
+    console.warn("SearchResults expects an array, but got:", data);
     return <p className="text-gray-400 mt-8">No results found.</p>;
+  }
 
   const renderImage = (images) => {
     if (!images || images.length === 0) return null;
@@ -46,11 +47,10 @@ export default function SearchResults({ data }) {
             </div>
           </div>
 
-          <div
-            className="flex gap-3 items-center"
-          >
-              <p className="text-gray-500 text-xs mt-1">{song.album?.name}</p>
-        
+          <div className="flex gap-3 items-center">
+            <p className="text-gray-500 text-xs mt-1">
+              {song.album?.name || "Unknown Album"}
+            </p>
           </div>
         </div>
       ))}

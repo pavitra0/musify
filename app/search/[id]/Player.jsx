@@ -280,8 +280,9 @@ export default function Player({ song, audioSrc }) {
               {suggestions.map((sugg) => (
                 <div
                   key={sugg.id}
-                  className="flex items-center gap-4 bg-white/10 hover:bg-white/15 transition p-3 rounded-lg shadow-md cursor-pointer"
+                  className="flex items-center gap-4 hover:bg-white/15 transition p-3 rounded-lg shadow-md cursor-pointer"
                   onClick={() => router.push(`/search/${sugg.id}`)}
+                  style={{backgroundColor:bgColor,color:accentColor}}
                 >
                   <img
                     src={sugg.image?.[1]?.url || sugg.image?.[0]?.url}
