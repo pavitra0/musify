@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 import { motion, AnimatePresence, animate } from "framer-motion";
+import { useColorTheme } from "@/components/ColorThemeContext";
+import Suggestions from "@/components/Suggestions";
 
 function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
@@ -43,12 +45,16 @@ export default function Player({ song, audioSrc }) {
 
   const router = useRouter();
 
+  const { setColors } = useColorTheme();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [bgColor, setBgColor] = useState("#1e293b");
   const [accentColor, setAccentColor] = useState("#334155");
+  const [currentIndex, setCurrentIndex] = useState(null);
+
   const [suggestions, setSuggestions] = useState([]);
 
   // Load suggestions based on ID
@@ -57,6 +63,11 @@ export default function Player({ song, audioSrc }) {
       if (!params.id) return;
       const results = await fetchSongSuggestions(params.id);
       setSuggestions(results);
+      const current = results.findIndex(
+        (s) => String(s.id) === String(params.id)
+      );
+
+      setCurrentIndex(current >= 0 ? current : null);
     }
     func();
   }, [params.id]);
@@ -74,8 +85,10 @@ export default function Player({ song, audioSrc }) {
         const bg = `rgb(${dark.join(",")})`;
         const accent = `rgb(${light.join(",")})`;
 
-        setBgColor(bg);
-        setAccentColor(accent);
+        // Avoid unnecessary state updates
+        if (bg !== bgColor) setBgColor(bg);
+        if (accent !== accentColor) setAccentColor(accent);
+        setColors({ bgColor: bg, accentColor: accent });
 
         document.documentElement.style.setProperty("--bg-color", bg);
         document.documentElement.style.setProperty("--accent-color", accent);
@@ -102,7 +115,11 @@ export default function Player({ song, audioSrc }) {
     const sound = new Howl({
       src: [audioSrc],
       html5: true,
-      onload: () => setDuration(sound.duration()),
+      onload: () => {
+        setDuration(sound.duration());
+        sound.play();
+        setIsPlaying(true);
+      },
       onend: () => setIsPlaying(false),
     });
 
@@ -142,6 +159,23 @@ export default function Player({ song, audioSrc }) {
     }
   };
 
+  const handleSkipForward = () => {
+    if (suggestions.length === 0 || currentIndex === null) return;
+
+    const nextIndex = (currentIndex + 1) % suggestions.length;
+    const nextSong = suggestions[nextIndex];
+    router.push(`/search/${nextSong.id}`);
+  };
+
+  const handleSkipBack = () => {
+    if (suggestions.length === 0 || currentIndex === null) return;
+
+    const prevIndex =
+      (currentIndex - 1 + suggestions.length) % suggestions.length;
+    const prevSong = suggestions[prevIndex];
+    router.push(`/search/${prevSong.id}`);
+  };
+
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = audioSrc;
@@ -151,8 +185,6 @@ export default function Player({ song, audioSrc }) {
     link.click();
     document.body.removeChild(link);
   };
-
-  console.log(suggestions);
 
   return (
     <div
@@ -199,14 +231,19 @@ export default function Player({ song, audioSrc }) {
           step="0.5"
           onChange={handleSeek}
           className="w-full h-2 rounded-lg outline-none"
-          style={{ background: accentColor }}
+          style={{ backgroundColor: accentColor }}
         />
       </div>
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-8 mt-6">
         <Heart size={22} color={accentColor} className="cursor-pointer" />
-        <SkipBack size={28} color={accentColor} className="cursor-pointer" />
+        <SkipBack
+          size={28}
+          onClick={handleSkipBack}
+          color={accentColor}
+          className="cursor-pointer"
+        />
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -229,7 +266,12 @@ export default function Player({ song, audioSrc }) {
           )}
         </motion.button>
 
-        <SkipForward size={28} color={accentColor} className="cursor-pointer" />
+        <SkipForward
+          size={28}
+          onClick={handleSkipForward}
+          color={accentColor}
+          className="cursor-pointer"
+        />
         <Repeat size={20} color={accentColor} className="cursor-pointer" />
       </div>
 
@@ -255,57 +297,13 @@ export default function Player({ song, audioSrc }) {
       </div>
 
       {/* Suggestions Panel */}
-      <AnimatePresence>
-        {showSuggestions && (
-          <motion.div
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
-            className="fixed bottom-0 left-0 w-full max-h-[80vh] overflow-y-auto z-50 backdrop-blur-md bg-white/5 border-t border-white/10 rounded-t-2xl p-5 shadow-[0_-2px_30px_rgba(0,0,0,0.3)]"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-white tracking-wide">
-                You Might Also Like
-              </h3>
-              <button
-                onClick={() => setShowSuggestions(false)}
-                className="text-gray-300 hover:text-white transition"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {suggestions.map((sugg) => (
-                <div
-                  key={sugg.id}
-                  className="flex items-center gap-4 hover:bg-white/15 transition p-3 rounded-lg shadow-md cursor-pointer"
-                  onClick={() => router.push(`/search/${sugg.id}`)}
-                  style={{backgroundColor:bgColor,color:accentColor}}
-                >
-                  <img
-                    src={sugg.image?.[1]?.url || sugg.image?.[0]?.url}
-                    alt={sugg.title}
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-white font-medium truncate">
-                      {sugg.name}
-                    </p>
-                    <p className="text-gray-300 text-sm truncate">
-                      {sugg?.artists?.primary[0].name || "Unknown Artist"}
-                    </p>
-                  </div>
-                  <button className="text-white/70 hover:text-white">
-                    <Play className="w-6 h-6" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Suggestions
+        setShowSuggestions={setShowSuggestions}
+        showSuggestions={showSuggestions}
+        suggestions={suggestions}
+        bgColor={bgColor}
+        accentColor={accentColor}
+      />
     </div>
   );
 }

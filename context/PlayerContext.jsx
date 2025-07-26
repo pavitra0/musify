@@ -14,25 +14,28 @@ export const PlayerProvider = ({ children }) => {
   const soundRef = useRef(null);
   const intervalRef = useRef(null);
 
-  const playSong = (songUrl) => {
-    if (soundRef.current) {
-      soundRef.current.stop();
-    }
+const playSong = (songUrl) => {
+  console.log("Playing song in context:", songUrl);
 
-    const sound = new Howl({
-      src: [songUrl],
-      html5: true,
-      onplay: () => {
-        setIsPlaying(true);
-        setDuration(sound.duration());
-      },
-      onend: () => setIsPlaying(false),
-    });
+  if (soundRef.current) {
+    soundRef.current.stop();
+  }
 
-    sound.play();
-    soundRef.current = sound;
-    setCurrentSong(songUrl);
-  };
+  const sound = new Howl({
+    src: [songUrl],
+    html5: true,
+    onplay: () => {
+      setIsPlaying(true);
+      setDuration(sound.duration());
+    },
+    onend: () => setIsPlaying(false),
+  });
+
+  sound.play();
+  soundRef.current = sound;
+  setCurrentSong(songUrl); // 👈 This must run
+};
+
 
   const togglePlay = () => {
     if (!soundRef.current) return;

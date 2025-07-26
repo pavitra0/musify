@@ -6,8 +6,8 @@ const ColorThemeContext = createContext();
 
 export const ColorThemeProvider = ({ children }) => {
   const [colors, setColors] = useState({
-    bgColor: '#1e293b',
-    accentColor: '#334155',
+    bgColor: '#4e293b',
+    accentColor: '#a893c7',
   });
 
   return (

@@ -9,7 +9,7 @@ export default async function SongDetailPage({ params }) {
   }
 
   const song = await res.json();
- 
+
 
   return <Player song={song?.data[0]} audioSrc={song?.data[0].downloadUrl[4].url} />;
 }
