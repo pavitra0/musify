@@ -309,7 +309,7 @@ import { useColorTheme } from "@/components/ColorThemeContext";
 import Suggestions from "@/components/Suggestions";
 import { usePlayerContext } from "../../context/PlayerContext";
 
-function formatTime(seconds) {
+export function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60)

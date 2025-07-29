@@ -123,12 +123,12 @@
 
 /* For Tailwind custom style */
 ::-webkit-scrollbar {
-  width: 5px;
+  
  display: none;
   
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--accent-color);
+ display: none;
 
 }
 /* globals.css or a dedicated CSS file for your slider */

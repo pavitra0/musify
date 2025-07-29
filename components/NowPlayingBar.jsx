@@ -27,22 +27,20 @@ export default function NowPlayingBar() {
         <div>
           <p 
            style={{color:accentColor}}
-          className="font-semibold"
+          className="font-bold"
           
           >{currentSong.name}</p>
-          <p className="text-sm text-gray-400"
-          style={{color:accentColor}}
-          >
-                 <div className="w-full flex justify-center">
-          <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
+           <div className="w-full flex justify-start">
+          <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-start text-center">
             {currentSong?.artists?.primary?.length > 0
               ? currentSong.artists.primary.map((s, i, arr) => (
                   <span key={s.id} className="flex">
                     <p
-                      onClick={(e) =>{
-                        e.stopPropagation()
-                        router.push(`/artist/${s.id}`)}}
-                      className="cursor-pointer font-bold hover:scale-130 transition-all"
+                      onClick={(e) => {
+                      e.stopPropagation()
+                        router.push(`/artist/${s.id}`)
+                      }}
+                      className="cursor-pointer font-bold"
                     >
                       {s.name.trim()}
                     </p>

@@ -52,6 +52,7 @@ export default function SearchPage() {
       if (!res.ok) throw new Error("Failed to fetch songs");
 
       const data = await res.json();
+      console.log("searchResult",data)
       const results = data?.data?.results ?? [];
 
       updateCache(trimmedTerm, results);

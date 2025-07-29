@@ -46,7 +46,7 @@ function ArtistDetails({ artistDetails, songs }) {
         <img
           src={artistDetails?.image?.[2]?.url || "/placeholder.jpg"}
           alt="blur-bg"
-          className="absolute inset-0 w-full h-120 object-cover blur-2xl opacity-30 scale-110 z-0"
+          className="absolute inset-0 w-[95%] h-full object-cover blur-2xl opacity-30 scale-110 z-0"
         />
 
         {/* Foreground content */}
