@@ -1,89 +1,68 @@
-// context/PlayerContext.jsx
 "use client";
-import { createContext, useContext, useState, useRef, useEffect } from "react";
+
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Howl } from "howler";
 
 const PlayerContext = createContext();
 
-export const PlayerProvider = ({ children }) => {
-  const [position, setPosition] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+export function PlayerProvider({ children }) {
   const [currentSong, setCurrentSong] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const howlRef = useRef(null); // ✅ Use ref so Howl instance persists without triggering re-renders
 
-  const soundRef = useRef(null);
-  const intervalRef = useRef(null);
+  const playSong = (song) => {
+    if (!song || !song.audioSrc) return;
 
-const playSong = (songUrl) => {
-  console.log("Playing song in context:", songUrl);
+    // ✅ Stop and unload previous instance
+    if (howlRef.current) {
+      howlRef.current.stop();
+      howlRef.current.unload();
+      howlRef.current = null;
+    }
 
-  if (soundRef.current) {
-    soundRef.current.stop();
-  }
+    const newHowl = new Howl({
+      src: [song.audioSrc],
+      html5: true,
+      onend: () => setIsPlaying(false),
+    });
 
-  const sound = new Howl({
-    src: [songUrl],
-    html5: true,
-    onplay: () => {
-      setIsPlaying(true);
-      setDuration(sound.duration());
-    },
-    onend: () => setIsPlaying(false),
-  });
-
-  sound.play();
-  soundRef.current = sound;
-  setCurrentSong(songUrl); // 👈 This must run
-};
-
+    howlRef.current = newHowl;
+    setCurrentSong(song);
+    newHowl.play();
+    setIsPlaying(true);
+  };
 
   const togglePlay = () => {
-    if (!soundRef.current) return;
+    const howl = howlRef.current;
+    if (!howl) return;
 
-    if (isPlaying) {
-      soundRef.current.pause();
+    if (howl.playing()) {
+      howl.pause();
       setIsPlaying(false);
     } else {
-      soundRef.current.play();
+      howl.play();
       setIsPlaying(true);
     }
   };
 
-  const handleSeek = (value) => {
-    if (soundRef.current) {
-      soundRef.current.seek(value);
-      setPosition(value);
-    }
+  const setTrackOnly = (song) => {
+    setCurrentSong(song);
   };
-
-  useEffect(() => {
-    if (!isPlaying || !soundRef.current) return;
-
-    intervalRef.current = setInterval(() => {
-      const current = soundRef.current.seek();
-      setPosition(typeof current === "number" ? current : 0);
-    }, 1000);
-
-    return () => clearInterval(intervalRef.current);
-  }, [isPlaying]);
 
   return (
     <PlayerContext.Provider
       value={{
-        position,
-        duration,
-        isPlaying,
-        togglePlay,
-        handleSeek,
-        setDuration,
-        soundRef,
-        playSong,
         currentSong,
+        isPlaying,
+        playSong,
+        togglePlay,
+        setTrackOnly,
+        howl: howlRef.current, // ✅ make howl available for progress tracking
       }}
     >
       {children}
     </PlayerContext.Provider>
   );
-};
+}
 
 export const usePlayerContext = () => useContext(PlayerContext);

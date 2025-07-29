@@ -80,6 +80,8 @@ export default function SearchPage() {
         ) : (
           <SongResults data={songs} />
         )}
+
+        <NowPlayingBar />
       </div>
     </div>
   );

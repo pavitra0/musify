@@ -1,58 +1,49 @@
-"use client";
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { usePlayerContext } from "@/context/PlayerContext";
+import { Pause, Play } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useColorTheme } from "./ColorThemeContext";
 
-export default function NowPlayingBar({ track }) {
-  const { playSong, togglePlay, isPlaying, currentSong } = usePlayerContext();
+export default function NowPlayingBar() {
+  const { currentSong, isPlaying, togglePlay } = usePlayerContext();
 
-  if (!track) return null;
+  const router = useRouter()
 
-  console.log(playSong,currentSong)
+  const { colors } = useColorTheme()
+  
+    
+    const bgColor = colors?.bgColor || '#0f0f0f'
+    const accentColor = colors?.accentColor || '#22c55e'
 
-  const isCurrentTrack = currentSong === track.audioSrc;
+  if (!currentSong) return null;
 
-  const handlePlay = () => {
-    if (!isCurrentTrack) {
-      playSong(track.audioSrc); // play new track
-    } else {
-      togglePlay(); // toggle play/pause for current track
-    }
-  };
+
 
   return (
-    <div className="fixed left-0 right-0 bottom-0 bg-gray-800 border-t border-gray-700 px-6 py-3 flex items-center justify-between z-20">
-      {/* Track Info */}
-      <div className="flex items-center gap-3">
-        <img
-          src={track.image}
-          alt={track.title}
-          className="w-10 h-10 rounded"
-        />
+    <div className={`fixed bottom-0 w-full  border-t-white p-4 left-0 text-white  cursor-pointer `}
+    onClick={() => router.push(`/${currentSong.id}`)}
+    style={{backgroundColor:bgColor}}
+    >
+      <div className="flex items-center justify-between">
         <div>
-          <div className="font-semibold">{track.title}</div>
-          <div className="text-xs text-gray-400">{track.artist}</div>
+          <p 
+           style={{color:accentColor}}
+          className="font-semibold"
+          
+          >{currentSong.name}</p>
+          <p className="text-sm text-gray-400"
+          style={{color:accentColor}}
+          >{currentSong?.artists?.primary?.map((artist) => artist.name).join(", ")}
+</p>
         </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex gap-3 items-center">
-        <button>
-          <ChevronLeft />
-        </button>
-
-        <button
-          onClick={handlePlay}
-          className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition"
+        <button onClick={(e)=>{
+          e.stopPropagation();
+          togglePlay()
+        }}
+          
+        className="p-3 rounded-2xl transition-all bg-white/20 z-10"
+        style={{color:accentColor}}
         >
-          {isCurrentTrack && isPlaying ? (
-            <Pause className="w-5 h-5" />
-          ) : (
-            <Play className="w-5 h-5" />
-          )}
-        </button>
-
-        <button>
-          <ChevronRight />
+          {isPlaying ? <Pause /> :  <Play />}
         </button>
       </div>
     </div>

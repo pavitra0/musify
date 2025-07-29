@@ -1,15 +1,37 @@
-import Player from './Player';
+// app/songs/[id]/page.jsx
 
-export default async function SongDetailPage({ params }) {
-  const { id } = params;
+"use client";
 
-  const res = await fetch(`https://jiosavan-api2.vercel.app/api/songs/${id}`);
-  if (!res.ok) {
-    return <div className="text-white p-4">Failed to load song.</div>;
-  }
+import { use, useEffect } from "react";
+import { usePlayerContext } from "@/context/PlayerContext";
+import Player from "./Player";
 
-  const song = await res.json();
+export default function SongDetailPage({ params }) {
+  const { id } = use(params);
+  const { playSong,currentSong } = usePlayerContext();
 
+  useEffect(() => {
+    if (currentSong?.id === id) return;
 
-  return <Player song={song?.data[0]} audioSrc={song?.data[0].downloadUrl[4].url} />;
+    async function fetchSong() {
+      const res = await fetch(
+        `https://jiosavan-api2.vercel.app/api/songs/${id}`
+      );
+      const data = await res.json();
+      const song = data?.data[0];
+
+      if (song) {
+        playSong({
+          ...song,
+          audioSrc: song.downloadUrl[4]?.url,
+        });
+      }
+    }
+
+    fetchSong();
+  }, [id]);
+
+  return (
+   <Player />
+  );
 }

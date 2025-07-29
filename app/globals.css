@@ -121,13 +121,99 @@
   }
 }
 
-
-
 /* For Tailwind custom style */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 5px;
+ display: none;
+  
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--accent-color);
+
+}
+/* globals.css or a dedicated CSS file for your slider */
+
+/* Basic reset for range input */
+input[type="range"] {
+  -webkit-appearance: none; /* Remove default WebKit styles */
+  appearance: none; /* Remove default styles for other browsers */
+  background: transparent; /* Make the input background transparent */
+  cursor: pointer;
+  width: 100%; /* Ensure it takes full width */
+  height: 8px; /* Match your h-2 class */
+  border-radius: 9999px; /* Rounded corners for the track */
+  outline: none; /* Remove focus outline */
+}
+
+/* WebKit (Chrome, Safari, Edge) Track Styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    white var(--thumb-position),
+    var(--accent-color) var(--thumb-position)
+  );
+  height: 8px;
   border-radius: 9999px;
+  transition: background 0.1s ease-in-out; /* Smooth transition for the fill */
+}
+
+/* WebKit (Chrome, Safari, Edge) Thumb Styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px; /* Adjust thumb size as needed */
+  width: 16px; /* Adjust thumb size as needed */
+  background-color: white; /* Thumb color is white */
+  border-radius: 50%;
+  margin-top: -4px; /* Vertically center the thumb on the 8px track */
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Optional subtle shadow */
+}
+
+/* Firefox Track Styling */
+input[type="range"]::-moz-range-track {
+  background: var(--accent-color); /* Default track color */
+  height: 8px;
+  border-radius: 9999px;
+}
+
+/* Firefox Completed Progress Styling */
+input[type="range"]::-moz-range-progress {
+  background-color: white; /* Fill color for completed part */
+  height: 8px;
+  border-radius: 9999px;
+}
+
+/* Firefox Thumb Styling */
+input[type="range"]::-moz-range-thumb {
+  border: none; /* Remove default border */
+  height: 16px; /* Adjust thumb size as needed */
+  width: 16px; /* Adjust thumb size as needed */
+  background-color: white; /* Thumb color is white */
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Optional subtle shadow */
+}
+
+/* IE (Edge Legacy) styling - less common now, but good for completeness */
+input[type="range"]::-ms-track {
+  width: 100%;
+  height: 8px;
+  background: transparent;
+  border-color: transparent;
+  border-width: 6px 0; /* Creates space for thumb */
+  color: transparent;
+}
+input[type="range"]::-ms-fill-lower {
+  background: white; /* Completed part */
+  border-radius: 9999px;
+}
+input[type="range"]::-ms-fill-upper {
+  background: white; /* Uncompleted part */
+  border-radius: 9999px;
+}
+input[type="range"]::-ms-thumb {
+  background: var(--background-color ); /* Thumb color */
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
