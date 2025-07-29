@@ -32,8 +32,26 @@ export default function NowPlayingBar() {
           >{currentSong.name}</p>
           <p className="text-sm text-gray-400"
           style={{color:accentColor}}
-          >{currentSong?.artists?.primary?.map((artist) => artist.name).join(", ")}
-</p>
+          >
+                 <div className="w-full flex justify-center">
+          <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
+            {currentSong?.artists?.primary?.length > 0
+              ? currentSong.artists.primary.map((s, i, arr) => (
+                  <span key={s.id} className="flex">
+                    <p
+                      onClick={(e) =>{
+                        e.stopPropagation()
+                        router.push(`/artist/${s.id}`)}}
+                      className="cursor-pointer font-bold hover:scale-130 transition-all"
+                    >
+                      {s.name.trim()}
+                    </p>
+                    {i < arr.length - 1 && <span>,</span>}
+                  </span>
+                ))
+              : "Unknown"}
+          </div>
+        </div>
         </div>
         <button onClick={(e)=>{
           e.stopPropagation();
