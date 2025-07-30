@@ -12,6 +12,7 @@ export async function fetchSongSuggestions(id) {
 
     const data = await res.json();
     return data?.data
+
   } catch (error) {
     console.error("Suggestion Fetch Error:", error.message);
     return [];
