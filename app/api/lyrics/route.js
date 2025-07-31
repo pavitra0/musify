@@ -1,10 +1,50 @@
 export async function GET(req) {
-  const { searchParams } = new URL(req.url);
-  const artist = searchParams.get("artist");
-  const title = searchParams.get("title");
+  try {
+    const { searchParams } = new URL(req.url);
+    const artist = searchParams.get("artist");
+    const title = searchParams.get("title");
 
-  const res = await fetch(`https://dab.yeet.su/api/lyrics?artist=${artist}&title=${title}`);
-  const data = await res.json();
+    if (!artist || !title) {
+      return Response.json(
+        { error: "Missing artist or title" },
+        { status: 400 }
+      );
+    }
 
-  return Response.json(data);
+    const res = await fetch(
+      `https://dab.yeet.su/api/lyrics?artist=${artist}&title=${title}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      console.error(
+        "Failed to fetch from external API:",
+        res.status,
+        res.statusText
+      );
+      return Response.json(
+        { error: "Lyrics not found" },
+        { status: res.status }
+      );
+    }
+
+    const text = await res.text();
+    try {
+      const data = JSON.parse(text);
+      return Response.json(data);
+    } catch (jsonError) {
+      console.error("Invalid JSON from lyrics API:", text);
+      return Response.json(
+        { error: "Invalid response from lyrics provider" },
+        { status: 502 }
+      );
+    }
+  } catch (error) {
+    console.error("Internal error:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
