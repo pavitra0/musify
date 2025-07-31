@@ -1,3 +1,8 @@
+export const config = {
+  runtime: "nodejs",
+  regions: ["iad1"],
+};
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
