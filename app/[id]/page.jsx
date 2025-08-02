@@ -42,15 +42,11 @@ export default function SongDetailPage({ params }) {
 
 
         // Lyrics fetch in background (non-blocking)
-        // local fetch
-        // fetch(
-        //   `https:///api/lyrics?artist=${encodeURIComponent(
-        //     song.artists?.primary[0]?.name
-        //   )}&title=${encodeURIComponent(song.name)}`
-        // )
-        // dab fetch
-        fetch(`https://dab.yeet.su/api/lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`)
-          .then((res) => res.json())
+        fetch(
+          `/api/lyrics?artist=${encodeURIComponent(
+            song.artists?.primary[0]?.name
+          )}&title=${encodeURIComponent(song.name)}`
+        ).then((res) => res.json())
           .then((lyricsData) => {
             setLyrics(lyricsData);
           })
