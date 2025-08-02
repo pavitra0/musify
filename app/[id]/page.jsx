@@ -42,7 +42,7 @@ export default function SongDetailPage({ params }) {
 
         // Lyrics fetch in background (non-blocking)
         fetch(
-          `https://musify-blue-xi.vercel.app//api/lyrics?artist=${encodeURIComponent(
+          `https://cueplay.vercel.app/api/lyrics?artist=${encodeURIComponent(
             song.artists?.primary[0]?.name
           )}&title=${encodeURIComponent(song.name)}`
         )
