@@ -40,12 +40,16 @@ export default function SongDetailPage({ params }) {
           audioSrc: song.downloadUrl[4]?.url,
         });
 
+
         // Lyrics fetch in background (non-blocking)
-        fetch(
-          `https://cueplay.vercel.app/api/lyrics?artist=${encodeURIComponent(
-            song.artists?.primary[0]?.name
-          )}&title=${encodeURIComponent(song.name)}`
-        )
+        // local fetch
+        // fetch(
+        //   `https:///api/lyrics?artist=${encodeURIComponent(
+        //     song.artists?.primary[0]?.name
+        //   )}&title=${encodeURIComponent(song.name)}`
+        // )
+        // dab fetch
+        fetch(`https://dab.yeet.su/api/lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`)
           .then((res) => res.json())
           .then((lyricsData) => {
             setLyrics(lyricsData);
