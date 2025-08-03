@@ -13,12 +13,14 @@ import {
   ChevronUp,
   Search,
   X,
+  HeaterIcon,
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 import { motion } from "framer-motion";
 import { useColorTheme } from "@/components/ColorThemeContext";
 import Suggestions from "@/components/Suggestions";
 import { usePlayerContext } from "../../context/PlayerContext";
+import AnimatedButton from "@/components/AnimatedButton";
 
 export function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
@@ -75,9 +77,13 @@ export default function Player({ lyrics }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [suggestions, setSuggestions] = useState([]);
+  const [likedSongs, setLikedSongs] = useState(() => {
+    return JSON.parse(localStorage.getItem("likedSongs")) || [];
+  });
 
   const { currentSong: song, isPlaying, togglePlay, howl } = usePlayerContext();
   const [currentTime, setCurrentTime] = useState(0);
+  const isLiked = likedSongs.some((s) => s.id === song?.id);
 
   const [isSynced, setIsSynced] = useState(false);
   const [lyricsData, setLyricsData] = useState([]);
@@ -88,8 +94,6 @@ export default function Player({ lyrics }) {
         return currentTime >= line.time && (!next || currentTime < next.time);
       })
     : -1;
-
-  console.log(lyrics.syncedLyrics);
 
   useEffect(() => {
     if (!lyrics) return;
@@ -241,6 +245,26 @@ export default function Player({ lyrics }) {
       (currentIndex - 1 + suggestions.length) % suggestions.length;
     const prevSong = suggestions[prevIndex];
     router.push(`/${prevSong.id}`);
+  };
+
+  const toggleLikeSong = () => {
+    if (!song) return;
+
+    // Extract only necessary properties
+    const songData = {
+      id: song.id,
+      name: song.name,
+      duration: song.duration,
+      image: song.image,
+      artists: song.artists,
+    };
+
+    const updatedLikedSongs = likedSongs.some((song) => song.id === song.id)
+      ? likedSongs.filter((song) => song.id !== song.id) // Remove song if already liked
+      : [...likedSongs, songData]; // Add cleaned song data
+
+    setLikedSongs(updatedLikedSongs);
+    localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
   };
 
   const handleDownload = () => {
@@ -395,13 +419,23 @@ export default function Player({ lyrics }) {
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-8 mt-6">
-        <Heart size={22} color={accentColor} className="cursor-pointer" />
-        <SkipBack
-          size={28}
-          onClick={handleSkipBack}
-          color={accentColor}
-          className="cursor-pointer"
-        />
+        <AnimatedButton>
+          <Heart
+            size={22}
+            color={accentColor}
+            fill={isLiked ? accentColor : "none"} // ← This adds fill
+            onClick={toggleLikeSong}
+            className="cursor-pointer transition-colors"
+          />
+        </AnimatedButton>
+        <AnimatedButton>
+          <SkipBack
+            size={28}
+            onClick={handleSkipBack}
+            color={accentColor}
+            className="cursor-pointer"
+          />
+        </AnimatedButton>
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -423,36 +457,44 @@ export default function Player({ lyrics }) {
             <Play size={28} color={accentColor} />
           )}
         </motion.button>
-
-        <SkipForward
-          size={28}
-          onClick={handleSkipForward}
-          color={accentColor}
-          className="cursor-pointer"
-        />
-        <Repeat size={20} color={accentColor} className="cursor-pointer" />
+        <AnimatedButton>
+          <SkipForward
+            size={28}
+            onClick={handleSkipForward}
+            color={accentColor}
+            className="cursor-pointer"
+          />
+        </AnimatedButton>
+        <AnimatedButton>
+          <Repeat size={20} color={accentColor} className="cursor-pointer" />
+        </AnimatedButton>
       </div>
 
       {/* Bottom Bar */}
-      <div className="mt-6">
-        <Download
-          size={24}
-          color={accentColor}
-          onClick={handleDownload}
-          className="cursor-pointer"
-        />
-      </div>
+      <AnimatedButton>
+        <div className="mt-6">
+          <Download
+            size={24}
+            color={accentColor}
+            onClick={handleDownload}
+            className="cursor-pointer"
+          />
+        </div>
+      </AnimatedButton>
       {/* Toggle Arrow */}
-      <div
-        onClick={() => setShowSuggestions(!showSuggestions)}
-        className="mt-8 cursor-pointer"
-      >
-        {showSuggestions ? (
-          <ChevronDown size={28} color={accentColor} />
-        ) : (
-          <ChevronUp size={28} color={accentColor} />
-        )}
-      </div>
+
+      <AnimatedButton>
+        <div
+          onClick={() => setShowSuggestions(!showSuggestions)}
+          className="mt-8 cursor-pointer"
+        >
+          {showSuggestions ? (
+            <ChevronDown size={28} color={accentColor} />
+          ) : (
+            <ChevronUp size={28} color={accentColor} />
+          )}
+        </div>
+      </AnimatedButton>
 
       {/* Suggestions Panel */}
 
