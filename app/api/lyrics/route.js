@@ -1,37 +1,28 @@
-import { NextResponse } from "next/server";
+// app/api/lyrics/route.js
+import { NextResponse } from 'next/server';
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const artist = searchParams.get("artist");
-  const title = searchParams.get("title");
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const artist = searchParams.get('artist');
+  const title = searchParams.get('title');
+
+  if (!artist || !title) {
+    return NextResponse.json({ error: 'Missing artist or title' }, { status: 400 });
+  }
+
+  const apiUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(
+    artist
+  )}&track_name=${encodeURIComponent(title)}`;
 
   try {
-    const response = await fetch(`https://dab.yeet.su/api/lyrics?artist=${artist}&title=${title}`);
-
-    if (!response.ok) {
-      const text = await response.text();
-      return NextResponse.json({
-        error: "API responded with error",
-        status: response.status,
-        body: text
-      }, { status: 500 });
+    const res = await fetch(apiUrl);
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Lyrics not found' }, { status: 404 });
     }
 
-    const data = await response.json();
-
-    return NextResponse.json(data, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
+    const data = await res.json();
+    return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: "Failed to fetch lyrics",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch lyrics' }, { status: 500 });
   }
 }
