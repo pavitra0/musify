@@ -40,13 +40,15 @@ export default function SongDetailPage({ params }) {
           audioSrc: song.downloadUrl[4]?.url,
         });
 
+        console.log(song)
 
         // Lyrics fetch in background (non-blocking)
         fetch(
           `/api/lyrics?artist=${encodeURIComponent(
-            song.artists?.primary[0]?.name
-          )}&title=${encodeURIComponent(song.name)}`
-        ).then((res) => res.json())
+            song?.artists?.primary[0]?.name
+          )}&title=${encodeURIComponent(song?.name)}`
+        )
+          .then((res) => res.json())
           .then((lyricsData) => {
             setLyrics(lyricsData);
           })

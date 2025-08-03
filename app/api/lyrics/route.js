@@ -16,7 +16,7 @@ export async function GET(req) {
       );
     }
 
-    const externalUrl = `https://corsproxy.io/?https://dab.yeet.su/api/lyrics?artist=${encodeURIComponent(
+    const externalUrl = `https://dab.yeet.su/api/lyrics?artist=${encodeURIComponent(
       artist
     )}&title=${encodeURIComponent(title)}`;
 
