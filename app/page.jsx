@@ -96,6 +96,7 @@ import SearchBar from "../components/SearchBar";
 import SongResults from "../components/SongResults";
 import { useColorTheme } from "../components/ColorThemeContext";
 import NowPlayingBar from "@/components/NowPlayingBar";
+import MainSection from "@/components/MainSection";
 
 export default function SearchPage() {
   const [songs, setSongs] = useState([]);
@@ -141,11 +142,15 @@ export default function SearchPage() {
       <div className="w-full max-w-2xl px-4 mt-16">
         <SearchBar onSearch={handleSearch} accentColor={accentColor} />
 
+
         {loading ? (
           <p className="text-gray-400 text-center mt-8">Searching for songs…</p>
         ) : (
           <SongResults data={songs} />
         )}
+
+        <MainSection />
+        
 
         <NowPlayingBar />
       </div>
