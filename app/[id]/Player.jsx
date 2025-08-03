@@ -19,9 +19,6 @@ import { motion } from "framer-motion";
 import { useColorTheme } from "@/components/ColorThemeContext";
 import Suggestions from "@/components/Suggestions";
 import { usePlayerContext } from "../../context/PlayerContext";
-import Image from "next/image";
-import NowPlayingBar from "@/components/NowPlayingBar";
-import Link from "next/link";
 
 export function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
@@ -58,7 +55,6 @@ function parseSyncedLyrics(lyricsText) {
 }
 
 export default function Player({ lyrics }) {
-  const thisCompoLyrics = lyrics;
   const params = useParams();
   const imgRef = useRef(null);
   const soundRef = useRef(null);
@@ -93,17 +89,21 @@ export default function Player({ lyrics }) {
       })
     : -1;
 
-  useEffect(() => {
-    if (lyrics?.lyrics) {
-      const synced = /\[\d{2}:\d{2}\.\d{2}\]/.test(lyrics.lyrics);
-      setIsSynced(synced);
+  console.log(lyrics.syncedLyrics);
 
-      if (synced) {
-        const parsed = parseSyncedLyrics(lyrics.lyrics);
-        setLyricsData(parsed);
-      } else {
-        setLyricsData(lyrics.lyrics); // plain text fallback
-      }
+  useEffect(() => {
+    if (!lyrics) return;
+
+    if (lyrics.syncedLyrics?.length) {
+      setIsSynced(true);
+      const parsed = parseSyncedLyrics(lyrics.syncedLyrics);
+      setLyricsData(parsed);
+    } else if (lyrics.plainLyrics) {
+      setIsSynced(false);
+      setLyricsData(lyrics.plainLyrics); // Plain fallback
+    } else {
+      setIsSynced(false);
+      setLyricsData([]);
     }
   }, [lyrics]);
 
@@ -252,9 +252,10 @@ export default function Player({ lyrics }) {
 
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.setAttribute("download", `${song?.name}-${
-      song?.artists?.primary?.[0]?.name
-    }-${song?.downloadUrl?.[4]?.quality}.mp3`);
+    link.setAttribute(
+      "download",
+      `${song?.name}-${song?.artists?.primary?.[0]?.name}-${song?.downloadUrl?.[4]?.quality}.mp3`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
