@@ -17,13 +17,21 @@ function MainSection() {
   const [playlists, setPlaylists] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const likedSongs = JSON.parse(localStorage.getItem("likedSongs"));
+ const [likedSongs, setLikedSongs] = useState([]);
 
-  const router = useRouter();
-  const { colors } = useColorTheme();
-  const bgColor = colors?.bgColor || "#0f0f0f";
+ 
+ const router = useRouter();
+ const { colors } = useColorTheme();
+ const bgColor = colors?.bgColor || "#0f0f0f";
 
-  useEffect(() => {
+ useEffect(() => {
+   if (typeof window !== "undefined") {
+     const stored = JSON.parse(localStorage.getItem("likedSongs")) || [];
+     setLikedSongs(stored);
+   }
+ }, []);
+ 
+ useEffect(() => {
     const fetchAllData = async () => {
       try {
         const [songData, latestData, albumData, playlistData] =
