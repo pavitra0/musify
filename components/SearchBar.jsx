@@ -17,7 +17,7 @@ export default function SearchBar({ onSearch }) {
       value={input}
       onChange={(e) => setInput(e.target.value)}
       placeholder="Search for songs, artists, albums…"
-      className="text-white text-left flex-1 px-4 py-2 rounded-l-md border-none text-lg outline-none"
+      className="text-white text-left flex-1 px-4 py-2 rounded-l-md border-none text-lg outline-none mb-8"
     />
   </form>
 </div>

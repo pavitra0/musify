@@ -1,25 +1,12 @@
-// import "./globals.css";
-// import { ColorThemeProvider } from "../components/ColorThemeContext";
-// import { PlayerProvider } from "@/context/PlayerContext";
-
-// export default function RootLayout({ children }) {
-//   return (
-//     <html lang="en">
-//       <head>
-//         <link rel="manifest" href="/manifest.json" />
-//         <meta name="theme-color" content="#0f0f0f" />
-//       </head>
-//       <body className="w-full ">
-//         <PlayerProvider>
-//           <ColorThemeProvider>{children}</ColorThemeProvider>
-//         </PlayerProvider>
-//       </body>
-//     </html>
-//   );
-// }
 import "./globals.css";
 import { ColorThemeProvider } from "../components/ColorThemeContext";
 import { PlayerProvider } from "@/context/PlayerContext";
+import { Josefin_Sans } from "next/font/google";
+import "./globals.css";
+
+const josefin = Josefin_Sans({ subsets: ["latin"], display: "swap" });
+
+
 
 export default function RootLayout({ children }) {
   return (
@@ -33,7 +20,7 @@ export default function RootLayout({ children }) {
       </head>
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-black text-white font-sans antialiased overflow-x-hidden"
+        className={`min-h-screen ${josefin.className} bg-black text-white font-sans antialiased overflow-x-hidden`}
       >
         <PlayerProvider>
           <ColorThemeProvider>

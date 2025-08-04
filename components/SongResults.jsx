@@ -78,10 +78,7 @@ import { useColorTheme } from "./ColorThemeContext";
 
 export default function SearchResults({ data = [] }) {
   const router = useRouter();
-  const { colors } = useColorTheme();
 
-  const bgColor = colors?.bgColor || "#0f0f0f";
-  const accentColor = colors?.accentColor || "#22c55e";
 
   // Handle non-array safely
   if (!Array.isArray(data)) {
@@ -98,7 +95,7 @@ export default function SearchResults({ data = [] }) {
           key={item.id}
           onClick={() => router.push(`/${item.id}`)}
           className="flex gap-3 items-center p-2 hover:bg-[#1c1c1c] rounded cursor-pointer transition"
-          style={{ backgroundColor: bgColor }}
+        
         >
           <img
             src={item.image?.[1]?.url || item.image?.[0]?.url || ""}
@@ -108,7 +105,7 @@ export default function SearchResults({ data = [] }) {
           <div>
             <p
               className="text-white font-medium"
-              style={{ color: accentColor }}
+    
             >
               {item.name}
             </p>

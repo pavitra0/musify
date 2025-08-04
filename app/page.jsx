@@ -50,7 +50,7 @@ export default function SearchPage() {
         background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
       }}
     >
-      <div className="w-full max-w-3xl px-4 mt-16">
+      <div className="w-full  px-4 ">
         <SearchBar onSearch={handleSearch} accentColor={accentColor} />
 
         {loading ? (
