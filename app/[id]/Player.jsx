@@ -250,7 +250,6 @@ export default function Player({ lyrics }) {
   const toggleLikeSong = () => {
     if (!song) return;
 
-    // Extract only necessary properties
     const songData = {
       id: song.id,
       name: song.name,
@@ -259,9 +258,9 @@ export default function Player({ lyrics }) {
       artists: song.artists,
     };
 
-    const updatedLikedSongs = likedSongs.some((song) => song.id === song.id)
-      ? likedSongs.filter((song) => song.id !== song.id) // Remove song if already liked
-      : [...likedSongs, songData]; // Add cleaned song data
+    const updatedLikedSongs = likedSongs.some((s) => s.id === song.id)
+      ? likedSongs.filter((s) => s.id !== song.id)
+      : [...likedSongs, songData];
 
     setLikedSongs(updatedLikedSongs);
     localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));

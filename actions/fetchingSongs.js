@@ -164,21 +164,4 @@ export const fetchSongSuggestionsByID = async (ID) => {
 };
 
 
-export const LyricsByID = async (ID ) =>{
-    try{
-        const Lyrics = await fetch(`${api_url}songs/${ID}/lyrics`);
-        const data = await Lyrics.json();
-        if(!Lyrics.ok) {
-            throw new Error(data.message || 'Failed to Fetch Artist Data');
-        }
-        return data;
-    } 
-    catch{
-        console.log('API Error: ', Error );
-        throw Error;
-    }
-    
-    
-}
-
 
