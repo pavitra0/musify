@@ -68,7 +68,7 @@ function MainSection() {
 
   async function handleClick(type, id) {
     if (type === "song") {
-      router.push(`/${id}`);
+      router.push(`/song/${id}`);
     }
     if (type === "album") {
       const album = albumMap.get(id);
@@ -138,7 +138,7 @@ function MainSection() {
     </section>
   );
 
-  console.log(likedSongs, trending);
+
 
   return (
     <main className="text-white p-4 space-y-8">

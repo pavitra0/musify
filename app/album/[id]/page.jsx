@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { fetchAlbumByID } from "@/actions/fetchingSongs";
 import { useColorTheme } from "@/components/ColorThemeContext";
 import { useRouter } from "next/navigation";
-import { formatTime } from "@/app/[id]/Player";
+import { formatTime } from "@/app/song/[id]/Player";
 
 export default function AlbumPage() {
   const { id } = useParams();
@@ -72,7 +72,7 @@ export default function AlbumPage() {
           <li
             key={song.id}
             className="flex justify-between items-center bg-neutral-900 hover:bg-neutral-800 transition-colors duration-200 p-3 rounded-md border border-transparent hover:border"
-            onClick={() => router.push(`/${song.id}`)}
+            onClick={() => router.push(`/song/${song.id}`)}
           >
             <div className="flex items-center gap-3">
               <span className="text-gray-400 text-sm w-6">{index + 1}</span>

@@ -17,8 +17,8 @@ export default function NowPlayingBar() {
 
   return (
     <div
-      className={`fixed bottom-0 w-full  border-t-white p-4 left-0 text-white  cursor-pointer `}
-      onClick={() => router.push(`/${currentSong.id}`)}
+      className={`fixed bottom-0 w-full  border-t-white p-2 left-0 text-white  cursor-pointer `}
+      onClick={() => router.push(`/song/${currentSong.id}`)}
       style={{ backgroundColor: bgColor }}
     >
       <div className="flex items-center justify-between">
@@ -29,7 +29,7 @@ export default function NowPlayingBar() {
           <div className="w-full flex justify-start">
             <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-start text-center">
               {currentSong?.artists?.primary?.length > 0
-                ? currentSong.artists.primary.map((s, i, arr) => (
+                ? currentSong.artists.primary.slice(0,4).map((s, i, arr) => (
                     <span key={s.id} className="flex">
                       <p
                         onClick={(e) => {

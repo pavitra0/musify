@@ -19,7 +19,7 @@ import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 import { motion } from "framer-motion";
 import { useColorTheme } from "@/components/ColorThemeContext";
 import Suggestions from "@/components/Suggestions";
-import { usePlayerContext } from "../../context/PlayerContext";
+import { usePlayerContext } from "@/context/PlayerContext";
 import AnimatedButton from "@/components/AnimatedButton";
 
 export function formatTime(seconds) {
@@ -235,7 +235,7 @@ export default function Player({ lyrics }) {
     const nextIndex = (currentIndex + 1) % suggestions.length;
     const nextSong = suggestions[nextIndex];
     console.log("next", nextSong);
-    router.push(`/${nextSong.id}`);
+    router.push(`/song/${nextSong.id}`);
   };
 
   const handleSkipBack = () => {
@@ -244,7 +244,7 @@ export default function Player({ lyrics }) {
     const prevIndex =
       (currentIndex - 1 + suggestions.length) % suggestions.length;
     const prevSong = suggestions[prevIndex];
-    router.push(`/${prevSong.id}`);
+    router.push(`/song/${prevSong.id}`);
   };
 
   const toggleLikeSong = () => {

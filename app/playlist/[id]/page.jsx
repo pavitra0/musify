@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { fetchplaylistsByID } from "@/actions/fetchingSongs";
 import { useColorTheme } from "@/components/ColorThemeContext";
-import { formatTime } from "@/app/[id]/Player";
+import { formatTime } from "@/app/song/[id]/Player";
 
 export default function PlaylistPage() {
   const { id } = useParams();
@@ -77,7 +77,7 @@ console.log(playlist)
             key={song.id}
             className="flex justify-between items-center bg-neutral-900 hover:bg-neutral-800 transition-colors duration-200 p-3 rounded-md border border-transparent hover:border"
             style={{ borderColor: accentColor }}
-            onClick={() => router.push(`/${song.id}`)}
+            onClick={() => router.push(`/song/${song.id}`)}
           >
             <div className="flex items-center gap-4">
               <span className="text-gray-400 text-sm w-6">{index + 1}</span>

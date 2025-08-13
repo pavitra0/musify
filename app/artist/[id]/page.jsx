@@ -6,9 +6,10 @@ async function ArtistDetailsPage({params}) {
   const {id} = params
 
 const artistDetails = await fetchArtist(id)
-const artistSongs = await fetchArtistSongs(id)
+
+
   return (
-    <ArtistDetails artistDetails={artistDetails} songs={artistSongs} />
+    <ArtistDetails artistDetails={artistDetails}  />
   )
 }
 

@@ -40,7 +40,6 @@ export default function SongDetailPage({ params }) {
           audioSrc: song.downloadUrl[4]?.url,
         });
 
-        console.log(song);
 
         // Lyrics fetch in background (non-blocking)
         fetch(
@@ -50,7 +49,6 @@ export default function SongDetailPage({ params }) {
         )
           .then((res) => res.json())
           .then((lyricsData) => {
-            console.log(lyricsData);
             setLyrics(lyricsData);
           })
           .catch((err) => {

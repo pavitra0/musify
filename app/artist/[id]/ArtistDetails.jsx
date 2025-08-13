@@ -22,6 +22,7 @@ function ArtistDetails({ artistDetails, songs }) {
 
   if (!artistDetails) return null;
 
+  console.log(artistDetails)
   return (
     <div
       className="h-screen flex flex-col text-white relative"
@@ -54,9 +55,11 @@ function ArtistDetails({ artistDetails, songs }) {
           <img
             src={artistDetails?.image?.[2]?.url || "/placeholder.jpg"}
             alt={artistDetails?.name || "Artist"}
-            className="w-80 h-80 rounded-full object-cover border-4 border-white/10 shadow-lg"
+            className="w-70 h-70 rounded-full object-cover border-4 border-white/10 shadow-lg"
           />
-          <h2 className="text-2xl font-bold mt-4 pb-6">
+          <h2 className="text-2xl font-bold mt-6 pb-6"
+          style={{color:accentColor}}
+          >
             {artistDetails?.name}
           </h2>
         </div>
@@ -69,6 +72,7 @@ function ArtistDetails({ artistDetails, songs }) {
         {artistDetails.topSongs?.slice(0, visibleSongs).map((song, index) => (
           <SongItem key={index} song={song} />
         ))}
+     
 
         {visibleSongs < artistDetails.topSongs?.length && (
           <div className="text-center mt-6">
