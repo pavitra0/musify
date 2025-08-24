@@ -28,6 +28,7 @@ export default function SongDetailPage({ params }) {
         );
         const data = await res.json();
         const song = data?.data[0];
+        console.log(song, 'from page player')
 
         if (!song) {
           console.error("Song not found");

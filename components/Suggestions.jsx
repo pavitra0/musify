@@ -39,7 +39,7 @@ const router = useRouter()
                   <div
                     key={sugg.id}
                     className="flex items-center gap-4 hover:bg-white/15 transition p-3 rounded-lg shadow-md cursor-pointer"
-                    onClick={() => router.push(`/${sugg.id}`)}
+                    onClick={() => router.push(`/song/${sugg.id}`)}
                     style={{ backgroundColor: bgColor }}
                   >
                     <img

@@ -1,43 +1,42 @@
-'use client'
+"use client";
 
-import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import SongResults from "./SongResults";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useClickOutside, useDebounce } from "react-haiku";
 
 export default function SearchBar() {
   const [input, setInput] = useState("");
-  const [debouncedValue, setDebouncedValue] = useState("");
-  const [isLoading,setLoading] = useState(false)
-  const [data,setData] = useState([])
+  const [isLoading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
   const router = useRouter();
+  const [showSearch, setShowSearch] = useState(true);
+  const ref = useRef(null);
 
-  // Debounce logic
+  const handleClickOutside = () => setShowSearch(false);
+
+  useClickOutside(ref, handleClickOutside);
+
+  const debouncedValue = useDebounce(input, 300);
+
+  const handleChange = (event) => {
+    setShowSearch(true);
+    setInput(event.target.value);
+  };
+
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(input.trim());
-    }, 600);
-
-    return () => clearTimeout(handler);
-  }, [input]);
-
-  // Trigger search when debounced value changes
-  useEffect(() => {
-    if (debouncedValue) {
+    if (debouncedValue.trim()) {
       handleSearch(debouncedValue);
+    } else {
+      setData([]);
     }
-  }, [debouncedValue, handleSearch]);
+  }, [debouncedValue]);
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (input.trim()) {
-      router.push(`/search/${encodeURIComponent(input.trim())}`);
-    }
-  }
-
-
-    async function handleSearch(searchTerm) {
+  // Search function
+  async function handleSearch(searchTerm) {
     const trimmedTerm = searchTerm.trim().toLowerCase();
+
+    if (!trimmedTerm) return;
 
     try {
       setLoading(true);
@@ -50,7 +49,7 @@ export default function SearchBar() {
       if (!res.ok) throw new Error("Failed to fetch songs");
 
       const data = await res.json();
-      const results = data?.data?.results || []
+      const results = data?.data?.results || [];
 
       setData(results);
     } catch (error) {
@@ -60,25 +59,45 @@ export default function SearchBar() {
     }
   }
 
+  // Handle form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    handleSearch(input); // Trigger search immediately
+    if (input.trim()) {
+      router.push(`/search/${encodeURIComponent(input.trim())}`);
+    }
+  }
+
+    const slicedData = data.slice(1, 6);
+
+
+  useEffect(() => {
+    if (slicedData.length > 0 && typeof window !== "undefined") {
+      localStorage.setItem("nextSongs", JSON.stringify(slicedData));
+    }
+  }, [slicedData]);
+
+  console.log(slicedData)
+
   return (
-    <div className="w-full flex flex-col items-start pb-4">
+    <div
+      ref={ref}
+      onClick={handleClickOutside}
+      className="w-full flex flex-col items-start pb-4"
+    >
       {/* Search Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-xl flex mt-12 mb-4"
-      >
+      <form onSubmit={handleSubmit} className="w-full max-w-xl flex mt-12 mb-4">
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleChange}
           placeholder="Search for songs, artists, albums…"
-          className="text-white flex-1 px-4 py-2 rounded-l-md border-none text-lg outline-none "
+          className="text-white flex-1 px-4 py-2 rounded-l-md border-none text-lg outline-none"
         />
       </form>
 
-      {/* Show results only if there's input */}
-      {input.trim() && (
-        <div className="w-full max-w-xl">
+      {input.trim() && showSearch && (
+        <div className="w-full max-w-xl transition-all">
           <SongResults data={data} isLoading={isLoading} />
         </div>
       )}

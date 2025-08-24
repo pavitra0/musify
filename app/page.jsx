@@ -4,19 +4,18 @@ import { usePlayerContext } from "@/context/PlayerContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SearchBar from "../components/SearchBar";
-import SongResults from "../components/SongResults";
 import { useColorTheme } from "../components/ColorThemeContext";
 import NowPlayingBar from "@/components/NowPlayingBar";
 import MainSection from "@/components/MainSection";
 
 export default function SearchPage() {
-  const [songs, setSongs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  // const [songs, setSongs] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  // const router = useRouter();
 
   const { colors } = useColorTheme();
   const bgColor = colors?.bgColor || "#0f0f0f";
-  const accentColor = colors?.accentColor || "#22c55e";
+  // const accentColor = colors?.accentColor || "#22c55e";
 
   // async function handleSearch(searchTerm) {
   //   const trimmedTerm = searchTerm.trim().toLowerCase();

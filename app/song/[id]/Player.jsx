@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ColorThief from "color-thief-browser";
@@ -13,7 +15,7 @@ import {
   ChevronUp,
   Search,
   X,
-  HeaterIcon,
+
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 import { motion } from "framer-motion";
@@ -266,6 +268,7 @@ export default function Player({ lyrics }) {
     localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
   };
 
+
   const handleDownload = () => {
     const actualUrl = song?.downloadUrl?.[4]?.url;
     if (!actualUrl) return;
@@ -377,7 +380,9 @@ export default function Player({ lyrics }) {
 
       {/* Title & Artist */}
       <div className="text-center mt-8">
-        <h2 className="text-2xl font-extrabold mb-4">{song?.name}</h2>
+        <h2 className="text-2xl font-extrabold mb-4" 
+        onClick={() => router.push(`/album/${song?.album?.id}`)}
+        >{song?.name}</h2>
         <div className="w-full flex justify-center">
           <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
             {song?.artists?.primary?.length > 0

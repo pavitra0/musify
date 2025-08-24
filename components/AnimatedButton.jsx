@@ -5,7 +5,7 @@ function AnimatedButton({children}) {
   return (
          <motion.button
          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.6 }} 
+          whileTap={{ scale: 0.8 }} 
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
        >
 

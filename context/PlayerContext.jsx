@@ -1,3 +1,5 @@
+// {'v1'}
+
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef } from "react";
@@ -8,7 +10,7 @@ const PlayerContext = createContext();
 export function PlayerProvider({ children }) {
   const [currentSong, setCurrentSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const howlRef = useRef(null); // ✅ Use ref so Howl instance persists without triggering re-renders
+  const howlRef = useRef(null); 
 
   const playSong = (song) => {
     if (!song || !song.audioSrc) return;
@@ -66,3 +68,344 @@ export function PlayerProvider({ children }) {
 }
 
 export const usePlayerContext = () => useContext(PlayerContext);
+
+
+// {'v1'}
+// "use client";
+
+// import { createContext, useContext, useState, useRef } from "react";
+// import { Howl } from "howler";
+
+// const PlayerContext = createContext();
+
+// export function PlayerProvider({ children }) {
+//   const [playlist, setPlaylist] = useState([]); // ✅ store all songs
+//   const [currentIndex, setCurrentIndex] = useState(-1); // ✅ track current song index
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const howlRef = useRef(null);
+
+//   const playSong = (song, songsList = []) => {
+//     if (!song || !song.audioSrc) return;
+
+//     // ✅ Update playlist if new list is passed
+//     if (songsList.length) {
+//       setPlaylist(songsList);
+//       setCurrentIndex(songsList.findIndex(s => s.audioSrc === song.audioSrc));
+//     }
+
+//     // ✅ Stop old instance
+//     if (howlRef.current) {
+//       howlRef.current.stop();
+//       howlRef.current.unload();
+//     }
+
+//     const newHowl = new Howl({
+//       src: [song.audioSrc],
+//       html5: true,
+//       onend: playNext, // ✅ Auto play next
+//     });
+
+//     howlRef.current = newHowl;
+//     newHowl.play();
+//     setIsPlaying(true);
+//   };
+
+//   const playNext = () => {
+//     if (playlist.length === 0) return;
+//     const nextIndex = (currentIndex + 1) % playlist.length;
+//     setCurrentIndex(nextIndex);
+//     playSong(playlist[nextIndex]);
+//   };
+
+//   const playPrev = () => {
+//     if (playlist.length === 0) return;
+//     const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+//     setCurrentIndex(prevIndex);
+//     playSong(playlist[prevIndex]);
+//   };
+
+//   const togglePlay = () => {
+//     if (!howlRef.current) return;
+
+//     if (howlRef.current.playing()) {
+//       howlRef.current.pause();
+//       setIsPlaying(false);
+//     } else {
+//       howlRef.current.play();
+//       setIsPlaying(true);
+//     }
+//   };
+
+//   return (
+//     <PlayerContext.Provider
+//       value={{
+//         playlist,
+//         currentIndex,
+//         isPlaying,
+//         playSong,
+//         playNext,
+//         playPrev,
+//         togglePlay,
+//         howl: howlRef.current,
+//       }}
+//     >
+//       {children}
+//     </PlayerContext.Provider>
+//   );
+// }
+
+// export const usePlayerContext = () => useContext(PlayerContext);
+
+// {'v3'}
+// "use client";
+
+// import { createContext, useContext, useState, useEffect, useRef } from "react";
+// import { Howl } from "howler";
+// import { useRouter } from "next/navigation";
+
+// const PlayerContext = createContext();
+
+// export function PlayerProvider({ children }) {
+//   const [playlist, setPlaylist] = useState([]);
+//   const [currentIndex, setCurrentIndex] = useState(0);
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [currentSong, setCurrentSong] = useState(null);
+//   const router = useRouter()
+
+//   const howlRef = useRef(null);
+//   const playlistRef = useRef([]);
+
+//   // Keep ref updated
+//   useEffect(() => {
+//     playlistRef.current = playlist;
+//   }, [playlist]);
+
+//   // Play a song
+//   const playSong = (song, list = playlistRef.current, index = 0) => {
+//     // if (!song || !song.audioSrc) return;
+   
+//     if (howlRef.current) {
+//       howlRef.current.stop();
+//       howlRef.current.unload();
+//     }
+
+//     const newHowl = new Howl({
+//       src: [song.audioSrc],
+//       html5: true,
+//       onend: () => playNextFunctional(),
+//     });
+
+//     howlRef.current = newHowl;
+//     newHowl.play();
+//     setIsPlaying(true);
+//     setCurrentSong(song);
+
+//     // Update playlist and index
+//     if (list.length) {
+//       setPlaylist(list);
+//       setCurrentIndex(index);
+//     }
+//   };
+
+//   // Play next song
+//   const playNextFunctional = () => {
+//     setCurrentIndex((prevIndex) => {
+//       const list = playlistRef.current;
+//       if (!list.length) return prevIndex;
+
+//       const nextIndex = (prevIndex + 1) % list.length;
+//       playSong(list[nextIndex], list, nextIndex);
+//       return nextIndex;
+//     });
+//   };
+
+//   const playPrev = () => {
+//     setCurrentIndex((prevIndex) => {
+//       const list = playlistRef.current;
+//       if (!list.length) return prevIndex;
+
+//       const prev = (prevIndex - 1 + list.length) % list.length;
+//       playSong(list[prev], list, prev);
+//       return prev;
+//     });
+//   };
+
+//   const togglePlay = () => {
+//     if (!howlRef.current) return;
+//     if (howlRef.current.playing()) {
+//       howlRef.current.pause();
+//       setIsPlaying(false);
+//     } else {
+//       howlRef.current.play();
+//       setIsPlaying(true);
+//     }
+//   };
+
+//   // Load nextSongs from localStorage on mount
+//   useEffect(() => {
+//     if (typeof window !== "undefined") {
+//       const storedNextSongs = JSON.parse(localStorage.getItem("nextSongs")) || [];
+//       if (storedNextSongs.length) {
+//         setPlaylist(storedNextSongs);
+//         setCurrentIndex(0);
+//       }
+//     }
+//   }, []);
+
+//   // Play first song once playlist is set
+//   useEffect(() => {
+//     if (playlist.length) {
+//       playSong(playlist[0], playlist, 0);
+//     }
+//   }, [playlist]);
+
+//   return (
+//     <PlayerContext.Provider
+//       value={{
+//         playlist,
+//         currentIndex,
+//         currentSong,
+//         isPlaying,
+//         playSong,
+//         playNext: playNextFunctional,
+//         playPrev,
+//         togglePlay,
+//         howl: howlRef.current,
+//       }}
+//     >
+//       {children}
+//     </PlayerContext.Provider>
+//   );
+// }
+
+// export const usePlayerContext = () => useContext(PlayerContext);
+
+
+// "use client";
+
+// import { createContext, useContext, useState, useEffect, useRef } from "react";
+// import { Howl } from "howler";
+// import { useRouter } from "next/navigation";
+
+// const PlayerContext = createContext();
+
+// export function PlayerProvider({ children }) {
+//   const router = useRouter();
+//   const [playlist, setPlaylist] = useState([]);
+//   const [currentIndex, setCurrentIndex] = useState(0);
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [currentSong, setCurrentSong] = useState(null);
+
+//   const howlRef = useRef(null);
+//   const playlistRef = useRef([]);
+
+//   // Keep ref updated
+//   useEffect(() => {
+//     playlistRef.current = playlist;
+//   }, [playlist]);
+
+//   // Play a song
+//   const playSong = (song, list = playlistRef.current, index = 0) => {
+//     if (!song || !song.audioSrc) return;
+//     console.log("Playing song:", song);
+
+//     // Stop previous song
+//     if (howlRef.current) {
+//       howlRef.current.stop();
+//       howlRef.current.unload();
+//     }
+
+//     const newHowl = new Howl({
+//       src: [song.audioSrc],
+//       html5: true,
+//       onend: () => playNextFunctional(),
+//     });
+
+//     howlRef.current = newHowl;
+//     newHowl.play();
+//     setIsPlaying(true);
+//     setCurrentSong(song);
+
+//     // Update playlist and index
+//     if (list.length) {
+//       setPlaylist(list);
+//       setCurrentIndex(index);
+//     }
+
+//     // Navigate to song page
+//     if (song.id) {
+//       router.push(`/song/${song.id}`);
+//     }
+//   };
+
+//   // Play next song
+//   const playNextFunctional = () => {
+//     setCurrentIndex((prevIndex) => {
+//       const list = playlistRef.current;
+//       if (!list.length) return prevIndex;
+
+//       const nextIndex = (prevIndex + 1) % list.length;
+//       playSong(list[nextIndex], list, nextIndex);
+//       return nextIndex;
+//     });
+//   };
+
+//   const playPrev = () => {
+//     setCurrentIndex((prevIndex) => {
+//       const list = playlistRef.current;
+//       if (!list.length) return prevIndex;
+
+//       const prev = (prevIndex - 1 + list.length) % list.length;
+//       playSong(list[prev], list, prev);
+//       return prev;
+//     });
+//   };
+
+//   const togglePlay = () => {
+//     if (!howlRef.current) return;
+//     if (howlRef.current.playing()) {
+//       howlRef.current.pause();
+//       setIsPlaying(false);
+//     } else {
+//       howlRef.current.play();
+//       setIsPlaying(true);
+//     }
+//   };
+
+//   // Load playlist from localStorage safely
+//   useEffect(() => {
+//     if (typeof window === "undefined") return;
+
+//     const storedNextSongs = JSON.parse(localStorage.getItem("nextSongs")) || [];
+//     if (storedNextSongs.length) {
+//       setPlaylist(storedNextSongs);
+//       setCurrentIndex(0);
+
+//       // Play first song after small delay
+//       setTimeout(() => {
+//         const firstSong = storedNextSongs[0];
+//         playSong(firstSong, storedNextSongs, 0);
+//       }, 50);
+//     }
+//   }, []);
+
+//   return (
+//     <PlayerContext.Provider
+//       value={{
+//         playlist,
+//         currentIndex,
+//         currentSong,
+//         isPlaying,
+//         playSong,
+//         playNext: playNextFunctional,
+//         playPrev,
+//         togglePlay,
+//         howl: howlRef.current,
+//       }}
+//     >
+//       {children}
+//     </PlayerContext.Provider>
+//   );
+// }
+
+// export const usePlayerContext = () => useContext(PlayerContext);
