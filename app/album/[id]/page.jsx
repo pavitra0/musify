@@ -80,7 +80,7 @@ export default function AlbumPage() {
               <div className="flex flex-col">
                 <span className="text-base">{song.name}</span>
                 <span className="text-sm text-gray-500">
-                  {song?.artists?.primary.map((artist) => artist.name)}
+                  {song?.artists?.primary.map((artist) => artist.name).join(', ')}
                 </span>
               </div>
             </div>

@@ -9,6 +9,7 @@ import {
 } from "../actions/fetchingSongs";
 import { useColorTheme } from "./ColorThemeContext";
 import { useRouter } from "next/navigation";
+import { LoaderCircle } from "lucide-react";
 
 function MainSection() {
   const [trending, setTrending] = useState([]);
@@ -17,21 +18,20 @@ function MainSection() {
   const [playlists, setPlaylists] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
- const [likedSongs, setLikedSongs] = useState([]);
+  const [likedSongs, setLikedSongs] = useState([]);
 
- 
- const router = useRouter();
- const { colors } = useColorTheme();
- const bgColor = colors?.bgColor || "#0f0f0f";
+  const router = useRouter();
+  const { colors } = useColorTheme();
+  const bgColor = colors?.bgColor || "#0f0f0f";
 
- useEffect(() => {
-   if (typeof window !== "undefined") {
-     const stored = JSON.parse(localStorage.getItem("likedSongs")) || [];
-     setLikedSongs(stored);
-   }
- }, []);
- 
- useEffect(() => {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("likedSongs")) || [];
+      setLikedSongs(stored);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchAllData = async () => {
       try {
         const [songData, latestData, albumData, playlistData] =
@@ -86,12 +86,13 @@ function MainSection() {
 
   if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
 
-
-
   const SectionSlider = ({ title, items, type }) => (
-    <section className="space-y-2">
-      <h2 className="text-xl font-bold">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-thin pb-2">
+    <section className="space-y-1">
+     {items.length ? <h2 className="text-xl font-bold">{title}</h2> : null}
+      <div
+        className="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto scroll-smooth scrollbar-thin pb-2"
+        style={{ gridTemplateRows: "repeat(2, 2)" }}
+      >
         {items.map((item, i) => {
           const image =
             item.image?.[1]?.url || item.image?.[0]?.url || "/placeholder.jpg";
@@ -109,7 +110,7 @@ function MainSection() {
             <div
               key={item.id || i}
               onClick={() => handleClick(type, item.id)}
-              className="relative w-36 shrink-0 snap-start bg-neutral-800 rounded-xl hover:scale-105 transition-transform duration-200 p-2"
+              className="relative w-36 bg-neutral-800 rounded-xl hover:scale-105 transition-transform duration-200 p-2"
               style={{ backgroundColor: bgColor }}
             >
               <div className="relative group">
@@ -119,7 +120,6 @@ function MainSection() {
                   className="w-full aspect-square rounded-md object-cover"
                 />
 
-                {/* Hover info for duration or release year */}
                 {duration && (
                   <div className="absolute bottom-2 right-2 bg-black/60 text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">
                     {duration}
@@ -138,10 +138,28 @@ function MainSection() {
     </section>
   );
 
+  useEffect(() => {
+    if (
+      likedSongs?.length > 0 ||
+      trending?.length > 0 ||
+      latestSongs?.length > 0 ||
+      albums?.length > 0 ||
+      playlists?.length > 0
+    ) {
+      setLoading(false);
+    }
+  }, [likedSongs, trending, latestSongs, albums, playlists]);
 
+  if (loading) {
+    return (
+      <main className="flex justify-center items-center h-screen text-white">
+        <LoaderCircle className="animate-spin h-10 w-10" />
+      </main>
+    );
+  }
 
   return (
-    <main className="text-white p-4 space-y-8">
+    <main className="text-white p-4 space-y-4">
       {Array.isArray(likedSongs) && likedSongs.length > 0 && (
         <SectionSlider title="Liked Songs ❤️" items={likedSongs} type="song" />
       )}

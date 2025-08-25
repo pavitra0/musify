@@ -6,6 +6,7 @@ function AnimatedButton({children}) {
          <motion.button
          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.8 }} 
+          className='p-4'
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
        >
 

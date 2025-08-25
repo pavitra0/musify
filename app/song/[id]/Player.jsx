@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -15,10 +15,9 @@ import {
   ChevronUp,
   Search,
   X,
-
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useColorTheme } from "@/components/ColorThemeContext";
 import Suggestions from "@/components/Suggestions";
 import { usePlayerContext } from "@/context/PlayerContext";
@@ -268,7 +267,6 @@ export default function Player({ lyrics }) {
     localStorage.setItem("likedSongs", JSON.stringify(updatedLikedSongs));
   };
 
-
   const handleDownload = () => {
     const actualUrl = song?.downloadUrl?.[4]?.url;
     if (!actualUrl) return;
@@ -288,11 +286,15 @@ export default function Player({ lyrics }) {
   };
 
   return (
-    <div
+    <motion.div
       className="min-h-screen flex flex-col items-center justify-between text-white px-6 py-10 transition-colors duration-700"
       style={{
         background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
       }}
+      animate={{
+        background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
+      }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
     >
       <button
         onClick={() => router.push("/")}
@@ -373,16 +375,19 @@ export default function Player({ lyrics }) {
           <img
             src={song?.image?.[2]?.url || "/placeholder.jpg"}
             alt={song?.title || "Cover"}
-            className="w- h-full object-cover rounded-lg hover:scale-105"
+            className="w- h-full object-cover transition-all rounded-lg hover:scale-105"
           />
         )}
       </div>
 
       {/* Title & Artist */}
       <div className="text-center mt-8">
-        <h2 className="text-2xl font-extrabold mb-4" 
-        onClick={() => router.push(`/album/${song?.album?.id}`)}
-        >{song?.name}</h2>
+        <h2
+          className="text-2xl font-extrabold mb-4"
+          onClick={() => router.push(`/album/${song?.album?.id}`)}
+        >
+          {song?.name}
+        </h2>
         <div className="w-full flex justify-center">
           <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
             {song?.artists?.primary?.length > 0
@@ -509,6 +514,6 @@ export default function Player({ lyrics }) {
         bgColor={bgColor}
         accentColor={accentColor}
       />
-    </div>
+    </motion.div>
   );
 }
