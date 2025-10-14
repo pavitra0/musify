@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 import { ColorThemeProvider } from "../components/ColorThemeContext";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { Josefin_Sans } from "next/font/google";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
         <PlayerProvider>
           <ColorThemeProvider>
             <div className="w-full max-w-[1920px] mx-auto">{children}</div>
+            <Analytics />
           </ColorThemeProvider>
         </PlayerProvider>
       </body>
