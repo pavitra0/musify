@@ -13,6 +13,7 @@ export default function RootLayout({ children }) {
     <html lang="en" dir="ltr">
       <head>
         <meta charSet="UTF-8" />
+    <link rel="icon" href="/favicon-32x32.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#0f0f0f" />
         <link rel="manifest" href="/manifest.json" />
