@@ -36,7 +36,7 @@ export default function NowPlayingBar() {
                           e.stopPropagation();
                           router.push(`/artist/${s.id}`);
                         }}
-                        className="cursor-pointer font-bold"
+                        className="cursor-pointer font-bold hover:text-underline"
                       >
                         {s.name.trim()}
                       </p>
