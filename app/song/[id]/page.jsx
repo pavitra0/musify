@@ -5,6 +5,7 @@
 import { use, useEffect, useState } from "react";
 import { usePlayerContext } from "@/context/PlayerContext";
 import Player from "./Player";
+import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 
 export default function SongDetailPage({ params }) {
   const { id } = use(params);
@@ -13,7 +14,7 @@ export default function SongDetailPage({ params }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentSong?.id === id) {
+    if (currentSong?.id && String(currentSong.id) === String(id)) {
       setLoading(false);
       return;
     }
@@ -35,12 +36,33 @@ export default function SongDetailPage({ params }) {
           return;
         }
 
-        // Start playing immediately
-        playSong({
+        // Format song with audioSrc
+        const formattedSong = {
           ...song,
           audioSrc: song.downloadUrl[4]?.url,
-        });
+        };
 
+        // Fetch suggestions for playlist
+        const suggestions = await fetchSongSuggestions(id);
+        const formattedSuggestions = suggestions.map((s) => ({
+          ...s,
+          audioSrc: s.downloadUrl?.[4]?.url,
+        }));
+
+        // Find current song index in suggestions
+        const currentIndex = formattedSuggestions.findIndex(
+          (s) => String(s.id) === String(id)
+        );
+
+        // If current song is in suggestions, use suggestions as playlist
+        // Otherwise, use current song + suggestions
+        const playlist = currentIndex >= 0 
+          ? formattedSuggestions 
+          : [formattedSong, ...formattedSuggestions];
+        const songIndex = currentIndex >= 0 ? currentIndex : 0;
+
+        // Start playing with playlist
+        playSong(formattedSong, playlist, songIndex);
 
         // Lyrics fetch in background (non-blocking)
         fetch(
@@ -63,7 +85,7 @@ export default function SongDetailPage({ params }) {
     }
 
     fetchSong();
-  }, [id]);
+  }, [id, currentSong?.id]);
 
   return <Player lyrics={lyrics} />;
 }

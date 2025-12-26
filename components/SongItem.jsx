@@ -7,8 +7,6 @@ import { useRouter } from "next/navigation";
 import { formatTime } from "@/app/song/[id]/Player";
 
 const SongItem = ({ song }) => {
-  const { playTrack } = usePlayerContext();
-
   const router = useRouter();
 
   return (

@@ -427,7 +427,7 @@ export default function Player({ lyrics }) {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-8 mt-6">
+      <div className="flex items-center justify-center gap-4 mt-6">
         <AnimatedButton>
           <Heart
             size={22}

@@ -11,7 +11,7 @@ export async function fetchSongSuggestions(id) {
 
   try {
     const res = await fetch(
-      `${api_url}songs/${id}/suggestions`
+      `${api_url}songs/${id}/suggestions?limit=30`
     );
 
     if (!res.ok) throw new Error("Failed to fetch suggestions");
