@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 import { ColorThemeProvider } from "../components/ColorThemeContext";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { Josefin_Sans } from "next/font/google";
@@ -13,6 +14,7 @@ export default function RootLayout({ children }) {
     <html lang="en" dir="ltr">
       <head>
         <meta charSet="UTF-8" />
+    <link rel="icon" href="/favicon-32x32.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#0f0f0f" />
         <link rel="manifest" href="/manifest.json" />
@@ -25,6 +27,7 @@ export default function RootLayout({ children }) {
         <PlayerProvider>
           <ColorThemeProvider>
             <div className="w-full max-w-[1920px] mx-auto">{children}</div>
+            <Analytics />
           </ColorThemeProvider>
         </PlayerProvider>
       </body>
