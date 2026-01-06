@@ -16,7 +16,7 @@ const SongItem = ({ song }) => {
         className="flex items-center gap-4"
       >
         <img
-          src={song.image[0].url || "/placeholder.jpg"}
+          src={song.image[1].url || "/placeholder.jpg"}
           alt={song.name}
           className="w-12 h-12 object-cover rounded"
         />
