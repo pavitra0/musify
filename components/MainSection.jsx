@@ -88,7 +88,7 @@ function MainSection() {
 
   const SectionSlider = ({ title, items, type }) => (
     <section className="space-y-1">
-     {items.length ? <h2 className="text-xl font-bold">{title}</h2> : null}
+      {items.length ? <h2 className="text-xl font-bold">{title}</h2> : null}
       <div
         className="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto scroll-smooth scrollbar-thin pb-2"
         style={{ gridTemplateRows: "repeat(2, 2)" }}
@@ -102,16 +102,15 @@ function MainSection() {
             .join(", ");
           const duration = item.duration
             ? `${Math.floor(item.duration / 60)}:${(item.duration % 60)
-                .toString()
-                .padStart(2, "0")}`
+              .toString()
+              .padStart(2, "0")}`
             : null;
 
           return (
             <div
               key={item.id || i}
               onClick={() => handleClick(type, item.id)}
-              className="relative w-36 bg-neutral-800 rounded-xl hover:scale-105 transition-transform duration-200 p-2"
-              style={{ backgroundColor: bgColor }}
+              className="relative w-36 sm:w-40 md:w-48 bg-neutral-900/60 backdrop-blur-md border border-white/10 rounded-xl hover:scale-105 hover:bg-neutral-900/40 transition-all duration-300 p-3 shadow-lg"
             >
               <div className="relative group">
                 <img
