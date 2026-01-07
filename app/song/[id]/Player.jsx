@@ -15,6 +15,8 @@ import {
   ChevronUp,
   Search,
   X,
+  NotepadTextIcon,
+  ListFilter,
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
 import { AnimatePresence, motion } from "framer-motion";
@@ -57,7 +59,7 @@ function parseSyncedLyrics(lyricsText) {
     .filter(Boolean);
 }
 
-export default function Player({ lyrics }) {
+export default function Player({ lyrics, ArtistSongs }) {
   const params = useParams();
   const imgRef = useRef(null);
   const soundRef = useRef(null);
@@ -78,6 +80,14 @@ export default function Player({ lyrics }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [suggestions, setSuggestions] = useState([]);
+
+  const playlist =
+    suggestions?.length > 0
+      ? suggestions
+      : ArtistSongs?.length > 0
+      ? ArtistSongs
+      : [];
+
   const [likedSongs, setLikedSongs] = useState(() => {
     return JSON.parse(localStorage.getItem("likedSongs")) || [];
   });
@@ -163,18 +173,34 @@ export default function Player({ lyrics }) {
 
   // Load suggestions based on ID
   useEffect(() => {
-    async function func() {
+    async function loadPlaylist() {
       if (!params.id) return;
-      const results = await fetchSongSuggestions(params.id);
-      setSuggestions(results);
-      const current = results.findIndex(
-        (s) => String(s.id) === String(params.id)
-      );
 
-      setCurrentIndex(current >= 0 ? current : null);
+      let list = [];
+
+
+      try {
+        const results = await fetchSongSuggestions(params.id);
+
+        if (Array.isArray(results) && results.length > 0) {
+          list = results;
+        } else if (ArtistSongs?.length > 0) {
+          list = ArtistSongs;
+        }
+      } catch (err) {
+        console.warn("Suggestions failed, falling back to artist songs");
+        if (ArtistSongs?.length > 0) list = ArtistSongs;
+      }
+
+      setSuggestions(list);
+
+      const current = list.findIndex((s) => String(s.id) === String(params.id));
+
+      setCurrentIndex(current >= 0 ? current : 0);
     }
-    func();
-  }, [params.id]);
+
+    loadPlaylist();
+  }, [params.id, ArtistSongs]);
 
   // Set up color extraction from image
   useEffect(() => {
@@ -233,8 +259,8 @@ export default function Player({ lyrics }) {
   const handleSkipForward = () => {
     // if (suggestions.length === 0 || currentIndex === null) return;
 
-    const nextIndex = (currentIndex + 1) % suggestions.length;
-    const nextSong = suggestions[nextIndex];
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    const nextSong = playlist[nextIndex];
     console.log("next", nextSong);
     router.push(`/song/${nextSong.id}`);
   };
@@ -242,9 +268,8 @@ export default function Player({ lyrics }) {
   const handleSkipBack = () => {
     // if (suggestions.length === 0 || currentIndex === null) return;
 
-    const prevIndex =
-      (currentIndex - 1 + suggestions.length) % suggestions.length;
-    const prevSong = suggestions[prevIndex];
+    const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+    const prevSong = playlist[prevIndex];
     router.push(`/song/${prevSong.id}`);
   };
 
@@ -383,7 +408,7 @@ export default function Player({ lyrics }) {
       {/* Title & Artist */}
       <div className="text-center mt-8">
         <h2
-          className="text-2xl font-extrabold mb-4"
+          className="text-2xl font-extrabold mb-4 cursor-pointer"
           onClick={() => router.push(`/album/${song?.album?.id}`)}
         >
           {song?.name}
@@ -475,7 +500,12 @@ export default function Player({ lyrics }) {
           />
         </AnimatedButton>
         <AnimatedButton>
-          <Repeat size={20} color={accentColor} className="cursor-pointer" />
+          <ListFilter
+            size={20}
+            onClick={() => setShowLyrics((prev) => !prev)}
+            color={accentColor}
+            className="cursor-pointer"
+          />
         </AnimatedButton>
       </div>
 
@@ -510,7 +540,7 @@ export default function Player({ lyrics }) {
       <Suggestions
         setShowSuggestions={setShowSuggestions}
         showSuggestions={showSuggestions}
-        suggestions={suggestions}
+        suggestions={playlist}
         bgColor={bgColor}
         accentColor={accentColor}
       />
