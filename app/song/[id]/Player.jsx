@@ -81,7 +81,6 @@ export default function Player({ lyrics, ArtistSongs }) {
 
   const [suggestions, setSuggestions] = useState([]);
 
-  // palylist
   const playlist =
     suggestions?.length > 0
       ? suggestions
