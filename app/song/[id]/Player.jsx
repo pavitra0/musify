@@ -310,240 +310,273 @@ export default function Player({ lyrics, ArtistSongs }) {
     document.body.removeChild(link);
   };
 
-  return (
-    <motion.div
-      className="min-h-screen flex flex-col items-center justify-between text-white px-6 py-10 transition-colors duration-700"
-      style={{
-        background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
-      }}
-      animate={{
-        background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
-      }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-    >
-      <button
-        onClick={() => router.push("/")}
-        style={{ color: accentColor }}
-        className="absolute top-6 left-6 z-10 bg-white/20 backdrop-blur p-2 rounded-full hover:scale-110 cursor-pointer transition-all"
-      >
-        <Search size={20} />
-      </button>
-
-      {/* Hidden image for ColorThief */}
-
-      <img
-        ref={imgRef}
-        src={song?.image?.[1]?.url || "/placeholder.jpg"}
-        alt="ColorThief Image"
-        className="hidden"
-        crossOrigin="anonymous"
-      />
-
-      {/* Cover */}
-      <div
-        className="relative w-[300px] h-[300px] cursor-pointer mt-8  rounded-lg overflow-hidden transition-all "
-        onClick={() => setShowLyrics((prev) => !prev)}
-      >
-        {showLyrics ? (
+    return (
+    <div className="relative w-full min-h-screen overflow-hidden text-white bg-gray-900">
+      {/* Dynamic Blurred Background */}
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={song?.id || "default-bg"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 z-0"
+        >
+          {/* Background Image */}
           <div
-            className={`fixed z-50 inset-0 transition-all duration-300 ease-in-out ${
-              isFullScreen ? "bg-black flex items-center justify-center" : ""
-            }`}
-          >
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${
+                song?.image?.[2]?.url || song?.image?.[1]?.url || "/placeholder.jpg"
+              })`,
+              filter: "blur(40px) brightness(0.5)",
+              transform: "scale(1.2)", // Scale to hide blurred edges
+            }}
+          />
+          {/* Gradient Overlay */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to bottom, transparent, ${bgColor} 90%)`,
+              opacity: 0.6,
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Main Content Container */}
+      <div className="relative z-10 flex flex-col items-center justify-between min-h-screen px-6 py-10">
+        <button
+          onClick={() => router.push("/")}
+          style={{ color: accentColor }}
+          className="absolute top-6 left-6 z-20 bg-white/10 backdrop-blur-md p-2 rounded-full hover:scale-110 cursor-pointer transition-all border border-white/10"
+        >
+          <Search size={20} />
+        </button>
+
+        {/* Hidden image for ColorThief */}
+        <img
+          ref={imgRef}
+          src={song?.image?.[1]?.url || "/placeholder.jpg"}
+          alt="ColorThief Image"
+          className="hidden"
+          crossOrigin="anonymous"
+        />
+
+        {/* Cover */}
+        <div
+          className="relative w-[300px] h-[300px] cursor-pointer mt-8 rounded-lg overflow-hidden transition-all shadow-2xl"
+          onClick={() => setShowLyrics((prev) => !prev)}
+        >
+          {showLyrics ? (
             <div
-              ref={lyricsContainerRef}
-              className="w-full h-full overflow-y-auto px-6 py-20 text-sm leading-relaxed text-white scroll-smooth text-center"
-              style={{
-                background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
-              }}
+              className={`fixed z-50 inset-0 transition-all duration-300 ease-in-out ${
+                isFullScreen ? "bg-black flex items-center justify-center" : ""
+              }`}
             >
-              <button
-                className="absolute top-4 right-4 text-white bg-white/10 px-3 py-1 rounded text-sm hover:bg-white/20 transition"
-                onClick={() => setIsFullScreen(!isFullScreen)}
+              <div
+                ref={lyricsContainerRef}
+                className="w-full h-full overflow-y-auto px-6 py-20 text-sm leading-relaxed text-white scroll-smooth text-center"
+                style={{
+                  background: `linear-gradient(to bottom, ${bgColor}, #111827)`,
+                }}
               >
-                {isFullScreen ? <X /> : <X />}
-              </button>
-              {isSynced ? (
-                lyricsData.length > 0 ? (
-                  lyricsData.map((line, index) => (
+                <button
+                  className="absolute top-4 right-4 text-white bg-white/10 px-3 py-1 rounded text-sm hover:bg-white/20 transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFullScreen(!isFullScreen);
+                  }}
+                >
+                  {isFullScreen ? <X /> : <X />}
+                </button>
+                {isSynced ? (
+                  lyricsData.length > 0 ? (
+                    lyricsData.map((line, index) => (
+                      <div
+                        key={index}
+                        data-lyric-index={index}
+                        className={`py-3 transition-all font-bold text-xl sm:text-2xl duration-300 ease-in-out ${
+                          index === activeIndex
+                            ? "text-white font-bold scale-110"
+                            : "text-white/50"
+                        }`}
+                      >
+                        {line.text}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-400 italic mt-4 ">
+                      Lyrics not available
+                    </div>
+                  )
+                ) : typeof lyricsData === "string" && lyricsData.trim() ? (
+                  lyricsData.split("\n").map((line, i) => (
                     <div
-                      key={index}
-                      data-lyric-index={index}
-                      className={`py-3 transition-all font-bold text-xl sm:text-2xl duration-300 ease-in-out ${
-                        index === activeIndex
-                          ? "text-white font-bold scale-110"
-                          : "text-white/50"
-                      }`}
+                      key={i}
+                      className="py-3 font-bold text-xl sm:text-2xl "
                     >
-                      {line.text}
+                      {line}
                     </div>
                   ))
                 ) : (
-                  <div className="text-gray-400 italic mt-4 ">
+                  <div className="text-gray-400 italic mt-4">
                     Lyrics not available
                   </div>
-                )
-              ) : typeof lyricsData === "string" && lyricsData.trim() ? (
-                lyricsData.split("\n").map((line, i) => (
-                  <div key={i} className="py-3 font-bold text-xl sm:text-2xl ">
-                    {line}
-                  </div>
-                ))
-              ) : (
-                <div className="text-gray-400 italic mt-4">
-                  Lyrics not available
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+          ) : (
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              src={song?.image?.[2]?.url || "/placeholder.jpg"}
+              alt={song?.title || "Cover"}
+              className="w-full h-full object-cover transition-all rounded-lg hover:scale-105"
+            />
+          )}
+        </div>
+
+        {/* Title & Artist */}
+        <div className="text-center mt-8">
+          <h2
+            className="text-2xl font-extrabold mb-4 cursor-pointer drop-shadow-lg"
+            onClick={() => router.push(`/album/${song?.album?.id}`)}
+          >
+            {song?.name}
+          </h2>
+          <div className="w-full flex justify-center">
+            <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
+              {song?.artists?.primary?.length > 0
+                ? song.artists.primary.map((s, i, arr) => (
+                    <span key={s.id} className="flex">
+                      <p
+                        onClick={() => router.push(`/artist/${s.id}`)}
+                        className="cursor-pointer font-bold hover:scale-105 transition-all text-gray-200"
+                      >
+                        {s.name.trim()}
+                      </p>
+
+                      {i < arr.length - 1 && <span>,</span>}
+                    </span>
+                  ))
+                : "Unknown"}
             </div>
           </div>
-        ) : (
-          <img
-            src={song?.image?.[2]?.url || "/placeholder.jpg"}
-            alt={song?.title || "Cover"}
-            className="w- h-full object-cover transition-all rounded-lg hover:scale-105"
-          />
-        )}
-      </div>
+        </div>
 
-      {/* Title & Artist */}
-      <div className="text-center mt-8">
-        <h2
-          className="text-2xl font-extrabold mb-4 cursor-pointer"
-          onClick={() => router.push(`/album/${song?.album?.id}`)}
-        >
-          {song?.name}
-        </h2>
-        <div className="w-full flex justify-center">
-          <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
-            {song?.artists?.primary?.length > 0
-              ? song.artists.primary.map((s, i, arr) => (
-                  <span key={s.id} className="flex">
-                    <p
-                      onClick={() => router.push(`/artist/${s.id}`)}
-                      className="cursor-pointer font-bold hover:scale-105 transition-all"
-                    >
-                      {s.name.trim()}
-                    </p>
-
-                    {i < arr.length - 1 && <span>,</span>}
-                  </span>
-                ))
-              : "Unknown"}
+        {/* Progress */}
+        <div className="w-full mt-4">
+          <div className="flex justify-between text-sm text-gray-300 mb-1">
+            <span className="font-bold">{formatTime(position)}</span>
+            <span className="font-bold">{formatTime(duration)}</span>
           </div>
+          <input
+            type="range"
+            min="0"
+            max={duration}
+            value={position}
+            step="0.5"
+            onChange={handleSeek}
+            className="w-full h-2 rounded-lg outline-none cursor-pointer"
+            style={{ backgroundColor: accentColor }}
+          />
         </div>
-      </div>
 
-      {/* Progress */}
-      <div className="w-full mt-4">
-        <div className="flex justify-between text-sm text-gray-300 mb-1">
-          <span className="font-bold">{formatTime(position)}</span>
-          <span className="font-bold">{formatTime(duration)}</span>
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <AnimatedButton>
+            <Heart
+              size={22}
+              color={accentColor}
+              fill={isLiked ? accentColor : "none"}
+              onClick={toggleLikeSong}
+              className="cursor-pointer transition-colors"
+            />
+          </AnimatedButton>
+          <AnimatedButton>
+            <SkipBack
+              size={28}
+              onClick={handleSkipBack}
+              color={accentColor}
+              className="cursor-pointer"
+            />
+          </AnimatedButton>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            animate={{
+              borderRadius: isPlaying ? "12px" : "50%",
+              width: "56px",
+              height: "56px",
+              backgroundColor: isPlaying
+                ? "rgba(255,255,255,0.3)"
+                : "rgba(255,255,255,0.2)",
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            onClick={togglePlay}
+            className="flex items-center justify-center cursor-pointer text-white backdrop-blur-sm shadow-lg"
+          >
+            {isPlaying ? (
+              <Pause size={26} color={accentColor} />
+            ) : (
+              <Play size={28} color={accentColor} />
+            )}
+          </motion.button>
+          <AnimatedButton>
+            <SkipForward
+              size={28}
+              onClick={handleSkipForward}
+              color={accentColor}
+              className="cursor-pointer"
+            />
+          </AnimatedButton>
+          <AnimatedButton>
+            <ListFilter
+              size={20}
+              onClick={() => setShowLyrics((prev) => !prev)}
+              color={accentColor}
+              className="cursor-pointer"
+            />
+          </AnimatedButton>
         </div>
-        <input
-          type="range"
-          min="0"
-          max={duration}
-          value={position}
-          step="0.5"
-          onChange={handleSeek}
-          className="w-full h-2 rounded-lg outline-none"
-          style={{ backgroundColor: accentColor }}
+
+        {/* Bottom Bar */}
+        <AnimatedButton>
+          <div className="mt-6">
+            <Download
+              size={24}
+              color={accentColor}
+              onClick={handleDownload}
+              className="cursor-pointer"
+            />
+          </div>
+        </AnimatedButton>
+
+        {/* Toggle Arrow */}
+        <AnimatedButton>
+          <div
+            onClick={() => setShowSuggestions(!showSuggestions)}
+            className="mt-8 cursor-pointer"
+          >
+            {showSuggestions ? (
+              <ChevronDown size={28} color={accentColor} />
+            ) : (
+              <ChevronUp size={28} color={accentColor} />
+            )}
+          </div>
+        </AnimatedButton>
+
+        {/* Suggestions Panel */}
+        <Suggestions
+          setShowSuggestions={setShowSuggestions}
+          showSuggestions={showSuggestions}
+          suggestions={playlist}
+          bgColor={bgColor}
+          accentColor={accentColor}
         />
       </div>
-
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4 mt-6">
-        <AnimatedButton>
-          <Heart
-            size={22}
-            color={accentColor}
-            fill={isLiked ? accentColor : "none"} // ← This adds fill
-            onClick={toggleLikeSong}
-            className="cursor-pointer transition-colors"
-          />
-        </AnimatedButton>
-        <AnimatedButton>
-          <SkipBack
-            size={28}
-            onClick={handleSkipBack}
-            color={accentColor}
-            className="cursor-pointer"
-          />
-        </AnimatedButton>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          animate={{
-            borderRadius: isPlaying ? "12px" : "50%", // morph shape
-            width: isPlaying ? "56px" : "56px", // w-16 vs w-14
-            height: isPlaying ? "56px" : "56px", // h-10 vs h-14
-            backgroundColor: isPlaying
-              ? "rgba(255,255,255,0.3)"
-              : "rgba(255,255,255,0.2)",
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          onClick={togglePlay}
-          className="flex items-center justify-center cursor-pointer text-white"
-        >
-          {isPlaying ? (
-            <Pause size={26} color={accentColor} />
-          ) : (
-            <Play size={28} color={accentColor} />
-          )}
-        </motion.button>
-        <AnimatedButton>
-          <SkipForward
-            size={28}
-            onClick={handleSkipForward}
-            color={accentColor}
-            className="cursor-pointer"
-          />
-        </AnimatedButton>
-        <AnimatedButton>
-          <ListFilter
-            size={20}
-            onClick={() => setShowLyrics((prev) => !prev)}
-            color={accentColor}
-            className="cursor-pointer"
-          />
-        </AnimatedButton>
-      </div>
-
-      {/* Bottom Bar */}
-      <AnimatedButton>
-        <div className="mt-6">
-          <Download
-            size={24}
-            color={accentColor}
-            onClick={handleDownload}
-            className="cursor-pointer"
-          />
-        </div>
-      </AnimatedButton>
-      {/* Toggle Arrow */}
-
-      <AnimatedButton>
-        <div
-          onClick={() => setShowSuggestions(!showSuggestions)}
-          className="mt-8 cursor-pointer"
-        >
-          {showSuggestions ? (
-            <ChevronDown size={28} color={accentColor} />
-          ) : (
-            <ChevronUp size={28} color={accentColor} />
-          )}
-        </div>
-      </AnimatedButton>
-
-      {/* Suggestions Panel */}
-
-      <Suggestions
-        setShowSuggestions={setShowSuggestions}
-        showSuggestions={showSuggestions}
-        suggestions={playlist}
-        bgColor={bgColor}
-        accentColor={accentColor}
-      />
-    </motion.div>
+    </div>
   );
 }
