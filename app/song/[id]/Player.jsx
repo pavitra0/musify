@@ -78,6 +78,7 @@ export default function Player({ lyrics, ArtistSongs }) {
   const [accentColor, setAccentColor] = useState("#334155");
   const [currentIndex, setCurrentIndex] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showAllArtists, setShowAllArtists] = useState(false);
 
   const [suggestions, setSuggestions] = useState([]);
 
@@ -446,24 +447,55 @@ export default function Player({ lyrics, ArtistSongs }) {
           >
             {song?.name}
           </h2>
-          <div className="w-full flex justify-center">
-            <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
-              {song?.artists?.primary?.length > 0
-                ? song.artists.primary.map((s, i, arr) => (
-                    <span key={s.id} className="flex">
-                      <p
-                        onClick={() => router.push(`/artist/${s.id}`)}
-                        className="cursor-pointer font-bold hover:scale-105 transition-all text-gray-200"
-                      >
-                        {s.name.trim()}
-                      </p>
+            <div className="w-full flex justify-center">
+  <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
+    {song?.artists?.primary?.length > 0 ? (
+      (() => {
+        const artists = song.artists.primary;
+        const visibleArtists = showAllArtists ? artists : artists.slice(0, 3);
+        const hasMore = artists.length > 3;
 
-                      {i < arr.length - 1 && <span>,</span>}
-                    </span>
-                  ))
-                : "Unknown"}
-            </div>
-          </div>
+        return (
+          <>
+            {visibleArtists.map((s, i) => (
+              <span key={s.id} className="flex">
+                <p
+                  onClick={() => router.push(`/artist/${s.id}`)}
+                  className="cursor-pointer font-bold hover:scale-105 transition-all text-gray-200"
+                >
+                  {s.name.trim()}
+                </p>
+
+                {i < visibleArtists.length - 1 && <span>,</span>}
+              </span>
+            ))}
+
+            {/* Dots / Less button */}
+            {hasMore && !showAllArtists && (
+              <span
+                onClick={() => setShowAllArtists(true)}
+                className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
+              >
+                ...
+              </span>
+            )}
+
+            {hasMore && showAllArtists && (
+              <span
+                onClick={() => setShowAllArtists(false)}
+                className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
+              >
+                {" "}less
+              </span>
+            )}
+          </>
+        );
+      })()
+    ) : (
+      "Unknown"
+    )}
+  </div>
+</div>
         </div>
 
         {/* Progress */}
