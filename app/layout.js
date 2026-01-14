@@ -3,7 +3,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { ColorThemeProvider } from "../components/ColorThemeContext";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { Josefin_Sans } from "next/font/google";
-import "./globals.css";
+import SideBar from "@/components/SideBar";
+
 
 const josefin = Josefin_Sans({ subsets: ["latin"], display: "swap" });
 
@@ -26,7 +27,12 @@ export default function RootLayout({ children }) {
       >
         <PlayerProvider>
           <ColorThemeProvider>
-            <div className="w-full max-w-[1920px] mx-auto">{children}</div>
+            <div className="flex w-full max-w-[1920px] mx-auto"><SideBar />
+            
+                <main className="ml-60 flex-1 min-h-screen bg-[radial-gradient(circle_at_top_left,#4c1d95_0%,#1f1028_40%,#000_75%)]">
+
+                {children}
+              </main></div>
             <Analytics />
           </ColorThemeProvider>
         </PlayerProvider>

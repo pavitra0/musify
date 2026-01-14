@@ -11,6 +11,7 @@ import { useColorTheme } from "./ColorThemeContext";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
+
 function MainSection() {
   const [trending, setTrending] = useState([]);
   const [latestSongs, setLatestSongs] = useState([]);
