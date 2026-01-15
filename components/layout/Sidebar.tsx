@@ -9,10 +9,12 @@ import {
   Disc3,
   Mic2,
   History,
-  Settings
+  Settings,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSidebar } from "./SidebarContext";
+import Link from "next/link";
+import Image from "next/image";
 
 const navItems = [
   { label: "Home", icon: Home, href: "/" },
@@ -22,7 +24,7 @@ const navItems = [
   { label: "Albums", icon: Disc3, href: "/albums" },
   { label: "Artists", icon: Mic2, href: "/artists" },
   { label: "Recent", icon: History, href: "/recent" },
-  { label: "Settings", icon: Settings, href: "/settings" }
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 const Sidebar: React.FC = () => {
@@ -52,10 +54,18 @@ const Sidebar: React.FC = () => {
         }`}
       >
         <div className="flex items-center gap-2 px-1">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-purple-500 via-fuchsia-400 to-cyan-400 flex items-center justify-center text-[10px] font-bold tracking-wider">
-            MU
+          <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-purple-500 via-fuchsia-400 to-cyan-400 flex items-center justify-center text-xs font-bold tracking-wider">
+            <Link href="/">
+              <Image
+                src="/favicon-32x32.png"
+                alt="Musify"
+                width={32}
+                height={32}
+                className="text-white cursor-pointer"
+              />
+            </Link>
           </div>
-          <span className="text-sm font-semibold text-white/80">Musify</span>
+          <span className="text-xl font-semibold text-white/80">Musify</span>
         </div>
 
         <nav className="flex-1 space-y-1 text-sm">
@@ -66,7 +76,7 @@ const Sidebar: React.FC = () => {
               <button
                 key={item.label}
                 onClick={() => handleNavigation(item.href)}
-                className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-left transition ${
+                className={`w-full cursor-pointer flex items-center gap-3 px-2 py-2 rounded-md text-left transition ${
                   isActive
                     ? "text-white bg-white/10"
                     : "text-gray-300 hover:text-white hover:bg-white/5"
@@ -84,5 +94,3 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
-
-

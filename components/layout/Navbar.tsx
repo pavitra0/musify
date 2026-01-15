@@ -4,6 +4,8 @@ import React from "react";
 import SearchBar from "../SearchBar";
 import { UserCircle2, Menu, X } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
+import Link from "next/link";
+import Image from "next/image";
 
 const Navbar: React.FC = () => {
   const { toggle, isOpen } = useSidebar();
@@ -19,9 +21,17 @@ const Navbar: React.FC = () => {
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
         <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-purple-500 via-fuchsia-400 to-cyan-400 flex items-center justify-center text-xs font-bold tracking-wider">
-          MU
+          <Link href="/">
+            <Image
+              src="/favicon-32x32.png"
+              alt="Musify"
+              width={32}
+              height={32}
+              className="text-white cursor-pointer"
+            />
+          </Link>
         </div>
-        <span className="hidden sm:inline text-sm font-semibold text-white/80">
+        <span className="hidden sm:inline text-xl font-semibold text-white/80">
           Musify
         </span>
       </div>
@@ -41,5 +51,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-
-
