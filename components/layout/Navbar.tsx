@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
   const { toggle, isOpen } = useSidebar();
 
   return (
-    <header className="flex items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-white/5 bg-gradient-to-b from-neutral-900/80 via-neutral-950/80 to-black/80 backdrop-blur-md">
+    <header className="relative flex items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-white/5 bg-gradient-to-b from-neutral-900/80 via-neutral-950/80 to-black/80 backdrop-blur-md z-40">
       <div className="flex items-center gap-2">
         <button
           onClick={toggle}
