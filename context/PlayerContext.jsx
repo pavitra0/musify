@@ -76,6 +76,24 @@ export function PlayerProvider({ children }) {
       }
     }
 
+    // Track recent songs
+    if (typeof window !== "undefined" && song.id) {
+      const songData = {
+        id: song.id,
+        name: song.name,
+        duration: song.duration,
+        image: song.image,
+        artists: song.artists,
+      };
+      
+      const recentSongs = JSON.parse(localStorage.getItem("recentSongs") || "[]");
+      // Remove if already exists
+      const filtered = recentSongs.filter((s) => s.id !== song.id);
+      // Add to beginning (most recent first)
+      const updated = [songData, ...filtered].slice(0, 50); // Keep last 50 songs
+      localStorage.setItem("recentSongs", JSON.stringify(updated));
+    }
+
     const newHowl = new Howl({
       src: [song.audioSrc],
       html5: true,
@@ -113,6 +131,18 @@ export function PlayerProvider({ children }) {
     setCurrentSong(song);
   };
 
+  const stopSong = () => {
+    if (howlRef.current) {
+      howlRef.current.stop();
+      howlRef.current.unload();
+      howlRef.current = null;
+    }
+    setCurrentSong(null);
+    setIsPlaying(false);
+    setPlaylist([]);
+    setCurrentIndex(-1);
+  };
+
   return (
     <PlayerContext.Provider
       value={{
@@ -125,6 +155,7 @@ export function PlayerProvider({ children }) {
         playPrev,
         togglePlay,
         setTrackOnly,
+        stopSong,
         howl: howlRef.current, // ✅ make howl available for progress tracking
       }}
     >
