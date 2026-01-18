@@ -57,7 +57,6 @@ function MainSection() {
     fetchAllData();
   }, []);
 
-  // ✅ Memoized lookups
   const albumMap = useMemo(() => {
     return new Map(albums.map((album) => [album.id, album]));
   }, [albums]);
@@ -88,7 +87,9 @@ function MainSection() {
 
   const SectionSlider = ({ title, items, type }) => (
     <section className="space-y-1">
-      {items.length ? <h2 className="text-xl font-bold">{title}</h2> : null}
+      {items.length ? (
+        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      ) : null}
       <div
         className="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto scroll-smooth scrollbar-thin pb-2"
         style={{ gridTemplateRows: "repeat(2, 2)" }}
@@ -102,8 +103,8 @@ function MainSection() {
             .join(", ");
           const duration = item.duration
             ? `${Math.floor(item.duration / 60)}:${(item.duration % 60)
-              .toString()
-              .padStart(2, "0")}`
+                .toString()
+                .padStart(2, "0")}`
             : null;
 
           return (
@@ -175,3 +176,5 @@ function MainSection() {
 }
 
 export default MainSection;
+
+

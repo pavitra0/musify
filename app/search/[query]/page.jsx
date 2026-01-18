@@ -10,8 +10,12 @@ import {
 } from "@/actions/fetchingSongs";
 import SearchBar from "@/components/SearchBar";
 import NowPlayingBar from "@/components/NowPlayingBar";
+import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
+import { SidebarProvider } from "@/components/layout/SidebarContext";
+import { LoaderCircle } from "lucide-react";
 
-function MainSection({ params }) {
+function SearchResultsPage({ params }) {
   const { query } = use(params);
 
   const search = decodeURIComponent(query);
@@ -124,33 +128,72 @@ function MainSection({ params }) {
     </section>
   );
 
-  if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
-  if (loading) return <div className="text-gray-400 p-4">Loading...</div>;
+  if (error) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-neutral-950 to-black text-white flex">
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <Navbar />
+            <main className="flex-1 flex justify-center items-center">
+              <div className="text-red-500">Error: {error}</div>
+            </main>
+          </div>
+          <NowPlayingBar />
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (loading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-neutral-950 to-black text-white flex">
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <Navbar />
+            <main className="flex-1 flex justify-center items-center">
+              <LoaderCircle className="animate-spin h-10 w-10" />
+            </main>
+          </div>
+          <NowPlayingBar />
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
-    <main className="text-white p-4 space-y-8">
-  <SearchBar />
-      <h1>Search Results for "{search}"</h1>
-      {trending.length > 0 && (
-        <SectionSlider
-          title="You Might Like These"
-          items={trending}
-          type="song"
-        />
-      )}
-      {artists.length > 0 && (
-        <SectionSlider title="Artists" items={artists} type="artist" />
-      )}
-      {albums.length > 0 && (
-        <SectionSlider title="Albums" items={albums} type="album" />
-      )}
-      {playlists.length > 0 && (
-        <SectionSlider title="Playlists" items={playlists} type="playlist" />
-      )}
-
-      <NowPlayingBar />
-    </main>
+    <SidebarProvider>
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-neutral-950 to-black text-white flex">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Navbar />
+          <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-8">
+              <h1 className="text-3xl font-bold">Search Results for "{search}"</h1>
+              {trending.length > 0 && (
+                <SectionSlider
+                  title="Songs"
+                  items={trending}
+                  type="song"
+                />
+              )}
+              {artists.length > 0 && (
+                <SectionSlider title="Artists" items={artists} type="artist" />
+              )}
+              {albums.length > 0 && (
+                <SectionSlider title="Albums" items={albums} type="album" />
+              )}
+              {playlists.length > 0 && (
+                <SectionSlider title="Playlists" items={playlists} type="playlist" />
+              )}
+            </div>
+          </main>
+        </div>
+        <NowPlayingBar />
+      </div>
+    </SidebarProvider>
   );
 }
 
-export default MainSection;
+export default SearchResultsPage;

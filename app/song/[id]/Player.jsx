@@ -347,13 +347,31 @@ export default function Player({ lyrics, ArtistSongs }) {
 
       {/* Main Content Container */}
       <div className="relative z-10 flex flex-col items-center justify-between min-h-screen px-6 py-10">
-        <button
-          onClick={() => router.push("/")}
-          style={{ color: accentColor }}
-          className="absolute top-6 left-6 z-20 bg-white/10 backdrop-blur-md p-2 rounded-full hover:scale-110 cursor-pointer transition-all border border-white/10"
-        >
-          <Search size={20} />
-        </button>
+        <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
+          <button
+            onClick={() => router.back()}
+            className="bg-white/10 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 hover:scale-110 cursor-pointer transition-all border border-white/10 flex items-center justify-center group"
+            aria-label="Go back"
+          >
+            <ChevronDown 
+              size={20} 
+              className="rotate-90 text-white group-hover:text-white transition-colors" 
+            />
+          </button>
+          
+          <button
+            onClick={() => {
+              router.back();
+            }}
+            className="bg-white/10 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 hover:scale-110 cursor-pointer transition-all border border-white/10 flex items-center justify-center group"
+            aria-label="Close"
+          >
+            <X 
+              size={20} 
+              className="text-white group-hover:text-white transition-colors" 
+            />
+          </button>
+        </div>
 
         {/* Hidden image for ColorThief */}
         <img
