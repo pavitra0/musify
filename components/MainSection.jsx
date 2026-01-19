@@ -85,58 +85,71 @@ function MainSection() {
 
   if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
 
-  const SectionSlider = ({ title, items, type }) => (
-    <section className="space-y-1">
-      {items.length ? (
-        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
-      ) : null}
-      <div
-        className="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto scroll-smooth scrollbar-thin pb-2"
-        style={{ gridTemplateRows: "repeat(2, 2)" }}
-      >
-        {items.map((item, i) => {
-          const image =
-            item.image?.[1]?.url || item.image?.[0]?.url || "/placeholder.jpg";
-          const name = item.name || item.title;
-          const artistNames = item.artists?.primary
-            ?.map((artist) => artist.name)
-            .join(", ");
-          const duration = item.duration
-            ? `${Math.floor(item.duration / 60)}:${(item.duration % 60)
-                .toString()
-                .padStart(2, "0")}`
-            : null;
+  const SectionSlider = ({ title, items, type, showDivider = true }) => {
+    if (!items?.length) return null;
 
-          return (
-            <div
-              key={item.id || i}
-              onClick={() => handleClick(type, item.id)}
-              className="relative w-36 sm:w-40 md:w-48 bg-neutral-900/60 backdrop-blur-md border border-white/10 rounded-xl hover:scale-105 hover:bg-neutral-900/40 transition-all duration-300 p-3 shadow-lg"
-            >
-              <div className="relative group">
-                <img
-                  src={image}
-                  alt={name}
-                  className="w-full aspect-square rounded-md object-cover"
-                />
+    return (
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+        </div>
 
-                {duration && (
-                  <div className="absolute bottom-2 right-2 bg-black/60 text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">
-                    {duration}
-                  </div>
-                )}
-              </div>
+        <div className="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto scroll-smooth scrollbar-thin pb-2">
+          {items.map((item, i) => {
+            const image =
+              item.image?.[1]?.url ||
+              item.image?.[0]?.url ||
+              "/placeholder.jpg";
 
-              <p className="text-sm font-semibold mt-2 truncate">{name}</p>
-              {artistNames && (
-                <p className="text-xs text-gray-400 truncate">{artistNames}</p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+            const name = item.name || item.title;
+            const artistNames = item.artists?.primary
+              ?.map((artist) => artist.name)
+              .join(", ");
+
+            const duration = item.duration
+              ? `${Math.floor(item.duration / 60)}:${(item.duration % 60)
+                  .toString()
+                  .padStart(2, "0")}`
+              : null;
+
+            return (
+              <button
+                key={item.id || i}
+                type="button"
+                onClick={() => handleClick(type, item.id)}
+                className="text-left relative w-36 sm:w-40 md:w-48 bg-neutral-900/60 backdrop-blur-md border border-white/10 rounded-xl hover:scale-105 hover:bg-neutral-900/40 transition-all duration-300 p-3 shadow-lg"
+              >
+                <div className="relative group">
+                  <img
+                    src={image}
+                    alt={name}
+                    className="w-full aspect-square rounded-md object-cover"
+                  />
+
+                  {duration && (
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">
+                      {duration}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-2 min-h-[44px]">
+                  <p className="text-sm font-semibold truncate">{name}</p>
+                  {artistNames && (
+                    <p className="text-xs text-gray-400 truncate">
+                      {artistNames}
+                    </p>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {showDivider && <hr className="border-white/10" />}
+      </section>
+    );
+  };
 
   useEffect(() => {
     if (
@@ -159,7 +172,7 @@ function MainSection() {
   }
 
   return (
-    <main className="text-white p-4 space-y-4">
+    <main className="text-white py-6 space-y-10">
       {Array.isArray(likedSongs) && likedSongs.length > 0 && (
         <SectionSlider title="Liked Songs ❤️" items={likedSongs} type="song" />
       )}
@@ -170,7 +183,12 @@ function MainSection() {
       />
       <SectionSlider title="Latest Songs" items={latestSongs} type="song" />
       <SectionSlider title="Albums" items={albums} type="album" />
-      <SectionSlider title="Playlists" items={playlists} type="playlist" />
+      <SectionSlider
+        title="Playlists"
+        items={playlists}
+        type="playlist"
+        showDivider={false}
+      />
     </main>
   );
 }
