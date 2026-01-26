@@ -94,7 +94,7 @@ export default function SearchBar() {
             value={input}
             onChange={handleChange}
             placeholder="Search for songs, artists, albums…"
-            className="w-full px-4 py-2.5 pr-10 bg-neutral-800/90 border border-neutral-700/50 rounded-lg text-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all backdrop-blur-sm"
+            className="w-full px-4 py-1.5 pr-10 bg-neutral-800/90 border border-neutral-700/50 rounded-lg text-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all backdrop-blur-sm"
           />
           {input && (
             <button
