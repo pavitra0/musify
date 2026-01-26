@@ -1,13 +1,28 @@
+"use client";
+
 import { usePlayerContext } from "@/context/PlayerContext";
 import { Pause, Play, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useColorTheme } from "./ColorThemeContext";
 
+const formatTime = (t = 0) => {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+};
+
 export default function NowPlayingBar() {
-  const { currentSong, isPlaying, togglePlay, stopSong } = usePlayerContext();
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    stopSong,
+    progress,
+    duration,
+    seekTo,
+  } = usePlayerContext();
 
   const router = useRouter();
-
   const { colors } = useColorTheme();
 
   const bgColor = colors?.bgColor || "#0f0f0f";
@@ -17,44 +32,48 @@ export default function NowPlayingBar() {
 
   return (
     <div
-      className={`fixed bottom-0 w-full border-t border-white/10 p-3 left-0 text-white cursor-pointer z-50`}
-      onClick={() => router.push(`/song/${currentSong.id}`)}
+      className="fixed bottom-0 left-0 w-full border-t border-white/10 p-3 text-white z-50"
       style={{ backgroundColor: bgColor }}
+      onClick={() => router.push(`/song/${currentSong.id}`)}
     >
+      {/* Progress Bar */}
+      <div
+        className="absolute top-0 left-0 w-full h-1 bg-white/10"
+        onClick={(e) => {
+          e.stopPropagation();
+          const rect = e.currentTarget.getBoundingClientRect();
+          const percent = (e.clientX - rect.left) / rect.width;
+          seekTo(percent * duration);
+        }}
+      >
+        <div
+          className="h-full"
+          style={{
+            width: `${(progress / duration) * 100 || 0}%`,
+            backgroundColor: accentColor,
+          }}
+        />
+      </div>
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Song Image */}
-          <div className="w-12 h-12 rounded-md overflow-hidden shrink-0">
-            <img
-              src={currentSong.image?.[1]?.url || currentSong.image?.[0]?.url || "/placeholder.jpg"}
-              alt={currentSong.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <p style={{ color: accentColor }} className="font-bold text-sm truncate">
+          <img
+            src={currentSong.image?.[1]?.url || "/placeholder.jpg"}
+            className="w-12 h-12 rounded-md object-cover"
+            alt={currentSong.name}
+          />
+
+          <div className="min-w-0">
+            <p className="font-bold text-sm truncate" style={{ color: accentColor }}>
               {currentSong.name}
             </p>
-            <div className="w-full flex justify-start">
-              <div className="text-gray-300 text-xs flex flex-wrap gap-1 justify-start text-center">
-                {currentSong?.artists?.primary?.length > 0
-                  ? currentSong.artists.primary.slice(0, 4).map((s, i, arr) => (
-                      <span key={s.id} className="flex">
-                        <p
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/artist/${s.id}`);
-                          }}
-                          className="cursor-pointer font-bold hover:underline"
-                        >
-                          {s.name.trim()}
-                        </p>
-                        {i < arr.length - 1 && <span>,</span>}
-                      </span>
-                    ))
-                  : "Unknown"}
-              </div>
+            <p className="text-xs text-gray-300 truncate">
+              {currentSong.artists?.primary?.map(a => a.name).join(", ")}
+            </p>
+
+            <div className="flex justify-between text-[10px] text-white/60 mt-1">
+              <span>{formatTime(progress)}</span>
+              <span>{formatTime(duration)}</span>
             </div>
           </div>
         </div>
@@ -65,20 +84,18 @@ export default function NowPlayingBar() {
               e.stopPropagation();
               togglePlay();
             }}
-            className="p-2.5 rounded-full transition-all bg-white/20 hover:bg-white/30 z-10 shrink-0"
+            className="p-2 rounded-full bg-white/20"
             style={{ color: accentColor }}
-            aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
-          
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               stopSong();
             }}
-            className="p-2.5 rounded-full transition-all bg-white/10 hover:bg-white/20 text-white/80 hover:text-white z-10 shrink-0"
-            aria-label="Close"
+            className="p-2 rounded-full bg-white/10"
           >
             <X size={18} />
           </button>
