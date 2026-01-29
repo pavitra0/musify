@@ -1,7 +1,9 @@
-name: Issue Comment Bot
+name: Issue & PR Comment Bot
 
 on:
   issues:
+    types: [opened]
+  pull_request:
     types: [opened]
 
 jobs:
@@ -9,13 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Comment on issue
+      - name: Comment on Issue or PR
         uses: actions/github-script@v7
         with:
           script: |
+            const isPR = !!context.payload.pull_request;
+
+            const body = isPR
+              ? "Thanks for the pull request! Our bot is reviewing it 🔍"
+              : "Thanks for opening this issue! Our bot will take a look 👀";
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "Thanks for opening this issue! Our bot will take a look 👀"
-            })
+              body: body
+            });
