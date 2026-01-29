@@ -1,18 +1,21 @@
-name: Repo Bot
+name: Issue Comment Bot
 
 on:
   issues:
     types: [opened]
-  pull_request:
-    types: [opened]
 
 jobs:
-  bot:
+  comment:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Run bot script
-        run: |
-          echo "Bot is running"
+    steps:
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "Thanks for opening this issue! Our bot will take a look 👀"
+            })
