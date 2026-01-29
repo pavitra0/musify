@@ -55,7 +55,7 @@ export default function NowPlayingBar() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="grid grid-cols-3 items-center">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <img
             src={currentSong.image?.[1]?.url || "/placeholder.jpg"}
@@ -64,21 +64,19 @@ export default function NowPlayingBar() {
           />
 
           <div className="min-w-0">
-            <p className="font-bold text-sm truncate" style={{ color: accentColor }}>
+            <p
+              className="font-bold text-sm truncate"
+              style={{ color: accentColor }}
+            >
               {currentSong.name}
             </p>
             <p className="text-xs text-gray-300 truncate">
-              {currentSong.artists?.primary?.map(a => a.name).join(", ")}
+              {currentSong.artists?.primary?.map((a) => a.name).join(", ")}
             </p>
-
-            <div className="flex justify-between text-[10px] text-white/60 mt-1">
-              <span>{formatTime(progress)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex justify-center gap-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -87,7 +85,7 @@ export default function NowPlayingBar() {
             className="p-2 rounded-full bg-white/20"
             style={{ color: accentColor }}
           >
-            {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            {isPlaying ? <Pause size={22} /> : <Play size={22} />}
           </button>
 
           <button
@@ -97,8 +95,13 @@ export default function NowPlayingBar() {
             }}
             className="p-2 rounded-full bg-white/10"
           >
-            <X size={18} />
+            <X size={22} />
           </button>
+        </div>
+        <div className="flex justify-end text-[15px] text-white/60">
+          <span>{formatTime(progress)}</span>
+          <span className="mx-1">/</span>
+          <span>{formatTime(duration)}</span>
         </div>
       </div>
     </div>

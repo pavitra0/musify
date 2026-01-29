@@ -39,27 +39,30 @@ function darken(rgb, factor = 0.5) {
 }
 
 function parseSyncedLyrics(lyricsText) {
-  const lines = lyricsText.split("\n");
-  return lines
+  return lyricsText
+    .split("\n")
     .map((line) => {
-      const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2})\](.*)/);
-      if (match) {
-        const minutes = parseInt(match[1]);
-        const seconds = parseInt(match[2]);
-        const milliseconds = parseInt(match[3]) * 10;
-        const time = minutes * 60 + seconds + milliseconds / 1000;
-        const text = match[4].trim();
-        return { time, text };
-      }
-      return null;
+      const match = line.match(/\[(\d+):(\d+)(?:\.(\d+))?\](.*)/);
+      if (!match) return null;
+
+      const minutes = parseInt(match[1]);
+      const seconds = parseInt(match[2]);
+      const milliseconds = match[3]
+        ? parseInt(match[3].padEnd(3, "0"))
+        : 0;
+
+      const time = minutes * 60 + seconds + milliseconds / 1000;
+      const text = match[4].trim();
+
+      return { time, text };
     })
     .filter(Boolean);
 }
 
+
 export default function Player({ lyrics, ArtistSongs }) {
   const params = useParams();
   const imgRef = useRef(null);
-  const soundRef = useRef(null);
   const lyricsContainerRef = useRef(null);
 
   const router = useRouter();
@@ -95,7 +98,6 @@ export default function Player({ lyrics, ArtistSongs }) {
     duration,
     seekTo,
   } = usePlayerContext();
-  const [currentTime, setCurrentTime] = useState(0);
   const isLiked = likedSongs.some((s) => s.id === song?.id);
 
   const [isSynced, setIsSynced] = useState(false);
@@ -104,7 +106,7 @@ export default function Player({ lyrics, ArtistSongs }) {
   const activeIndex = isSynced
     ? lyricsData.findIndex((line, i) => {
         const next = lyricsData[i + 1];
-        return currentTime >= line.time && (!next || currentTime < next.time);
+        return progress >= line.time && (!next || progress < next.time);
       })
     : -1;
 
@@ -139,18 +141,6 @@ export default function Player({ lyrics, ArtistSongs }) {
       });
     }
   }, [activeIndex, isSynced]);
-
-  useEffect(() => {
-    let interval;
-    if (soundRef.current && isPlaying) {
-      interval = setInterval(() => {
-        setCurrentTime(soundRef.current.seek());
-      }, 200);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   useEffect(() => {
     if (isFullScreen) {
