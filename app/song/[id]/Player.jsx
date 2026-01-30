@@ -47,9 +47,7 @@ function parseSyncedLyrics(lyricsText) {
 
       const minutes = parseInt(match[1]);
       const seconds = parseInt(match[2]);
-      const milliseconds = match[3]
-        ? parseInt(match[3].padEnd(3, "0"))
-        : 0;
+      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, "0")) : 0;
 
       const time = minutes * 60 + seconds + milliseconds / 1000;
       const text = match[4].trim();
@@ -59,11 +57,12 @@ function parseSyncedLyrics(lyricsText) {
     .filter(Boolean);
 }
 
-
 export default function Player({ lyrics, ArtistSongs }) {
   const params = useParams();
   const imgRef = useRef(null);
   const lyricsContainerRef = useRef(null);
+  const barRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const router = useRouter();
 
@@ -102,6 +101,31 @@ export default function Player({ lyrics, ArtistSongs }) {
 
   const [isSynced, setIsSynced] = useState(false);
   const [lyricsData, setLyricsData] = useState([]);
+
+  const updateSeek = (clientX) => {
+    if (!barRef.current || !duration) return;
+    const rect = barRef.current.getBoundingClientRect();
+    const percent = Math.min(
+      Math.max((clientX - rect.left) / rect.width, 0),
+      1,
+    );
+    seekTo(percent * duration);
+  };
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (isDragging) updateSeek(e.clientX);
+    };
+    const handleUp = () => setIsDragging(false);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [isDragging]);
 
   const activeIndex = isSynced
     ? lyricsData.findIndex((line, i) => {
@@ -496,23 +520,25 @@ export default function Player({ lyrics, ArtistSongs }) {
         </div>
 
         {/* Progress Bar */}
-        <div
-          className="relative h-1 w-full mt-4"
-          onClick={(e) => {
-            e.stopPropagation();
-            const rect = e.currentTarget.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            seekTo(percent * duration);
-          }}
-        >
-          <div className="absolute inset-0 bg-white/20 rounded-full" />
+        <div className="w-full mt-4">
           <div
-            className="h-full rounded-full"
-            style={{
-              width: `${(progress / duration) * 100 || 0}%`,
-              backgroundColor: accentColor,
+            ref={barRef}
+            className="relative h-1 w-full bg-white/20 rounded-full cursor-pointer"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setIsDragging(true);
+              updateSeek(e.clientX);
             }}
-          />
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${(progress / duration) * 100 || 0}%`,
+                backgroundColor: accentColor,
+              }}
+            />
+          </div>
+
           <div className="flex justify-between text-[10px] text-white/60 mt-1">
             <span>{formatTime(progress)}</span>
             <span>{formatTime(duration)}</span>
