@@ -9,13 +9,10 @@ import {
   Play,
   Pause,
   SkipForward,
-  Repeat,
   Download,
   ChevronDown,
   ChevronUp,
-  Search,
   X,
-  NotepadTextIcon,
   ListFilter,
 } from "lucide-react";
 import { fetchSongSuggestions } from "@/actions/fetchingSongs";
@@ -42,19 +39,20 @@ function darken(rgb, factor = 0.5) {
 }
 
 function parseSyncedLyrics(lyricsText) {
-  const lines = lyricsText.split("\n");
-  return lines
+  return lyricsText
+    .split("\n")
     .map((line) => {
-      const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2})\](.*)/);
-      if (match) {
-        const minutes = parseInt(match[1]);
-        const seconds = parseInt(match[2]);
-        const milliseconds = parseInt(match[3]) * 10;
-        const time = minutes * 60 + seconds + milliseconds / 1000;
-        const text = match[4].trim();
-        return { time, text };
-      }
-      return null;
+      const match = line.match(/\[(\d+):(\d+)(?:\.(\d+))?\](.*)/);
+      if (!match) return null;
+
+      const minutes = parseInt(match[1]);
+      const seconds = parseInt(match[2]);
+      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, "0")) : 0;
+
+      const time = minutes * 60 + seconds + milliseconds / 1000;
+      const text = match[4].trim();
+
+      return { time, text };
     })
     .filter(Boolean);
 }
@@ -62,17 +60,15 @@ function parseSyncedLyrics(lyricsText) {
 export default function Player({ lyrics, ArtistSongs }) {
   const params = useParams();
   const imgRef = useRef(null);
-  const soundRef = useRef(null);
-  const intervalRef = useRef(null);
   const lyricsContainerRef = useRef(null);
+  const barRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const router = useRouter();
 
   const { setColors } = useColorTheme();
 
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [position, setPosition] = useState(0);
   const [showLyrics, setShowLyrics] = useState(false);
   const [bgColor, setBgColor] = useState("#1e293b");
   const [accentColor, setAccentColor] = useState("#334155");
@@ -86,24 +82,55 @@ export default function Player({ lyrics, ArtistSongs }) {
     suggestions?.length > 0
       ? suggestions
       : ArtistSongs?.length > 0
-      ? ArtistSongs
-      : [];
+        ? ArtistSongs
+        : [];
 
   const [likedSongs, setLikedSongs] = useState(() => {
     return JSON.parse(localStorage.getItem("likedSongs")) || [];
   });
 
-  const { currentSong: song, isPlaying, togglePlay, howl } = usePlayerContext();
-  const [currentTime, setCurrentTime] = useState(0);
+  const {
+    currentSong: song,
+    isPlaying,
+    togglePlay,
+    progress,
+    duration,
+    seekTo,
+  } = usePlayerContext();
   const isLiked = likedSongs.some((s) => s.id === song?.id);
 
   const [isSynced, setIsSynced] = useState(false);
   const [lyricsData, setLyricsData] = useState([]);
 
+  const updateSeek = (clientX) => {
+    if (!barRef.current || !duration) return;
+    const rect = barRef.current.getBoundingClientRect();
+    const percent = Math.min(
+      Math.max((clientX - rect.left) / rect.width, 0),
+      1,
+    );
+    seekTo(percent * duration);
+  };
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (isDragging) updateSeek(e.clientX);
+    };
+    const handleUp = () => setIsDragging(false);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [isDragging]);
+
   const activeIndex = isSynced
     ? lyricsData.findIndex((line, i) => {
         const next = lyricsData[i + 1];
-        return currentTime >= line.time && (!next || currentTime < next.time);
+        return progress >= line.time && (!next || progress < next.time);
       })
     : -1;
 
@@ -128,7 +155,7 @@ export default function Player({ lyrics, ArtistSongs }) {
 
     const container = lyricsContainerRef.current;
     const activeLine = container.querySelector(
-      `[data-lyric-index="${activeIndex}"]`
+      `[data-lyric-index="${activeIndex}"]`,
     );
 
     if (activeLine) {
@@ -138,18 +165,6 @@ export default function Player({ lyrics, ArtistSongs }) {
       });
     }
   }, [activeIndex, isSynced]);
-
-  useEffect(() => {
-    let interval;
-    if (soundRef.current && isPlaying) {
-      interval = setInterval(() => {
-        setCurrentTime(soundRef.current.seek());
-      }, 200);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   useEffect(() => {
     if (isFullScreen) {
@@ -178,7 +193,6 @@ export default function Player({ lyrics, ArtistSongs }) {
       if (!params.id) return;
 
       let list = [];
-
 
       try {
         const results = await fetchSongSuggestions(params.id);
@@ -235,20 +249,6 @@ export default function Player({ lyrics, ArtistSongs }) {
     }
   }, [song?.image?.[1]?.url]);
 
-  // Handle playing
-  useEffect(() => {
-    if (!howl || !isPlaying) return;
-
-    const interval = setInterval(() => {
-      const time = howl.seek();
-      setCurrentTime(typeof time === "number" ? time : 0);
-      setPosition(howl.seek());
-      setDuration(howl.duration());
-    }, 250);
-
-    return () => clearInterval(interval);
-  }, [howl, isPlaying]);
-
   const handleSeek = (e) => {
     const value = parseFloat(e.target.value);
     if (howl) {
@@ -304,14 +304,14 @@ export default function Player({ lyrics, ArtistSongs }) {
     link.href = downloadUrl;
     link.setAttribute(
       "download",
-      `${song?.name}-${song?.artists?.primary?.[0]?.name}-${song?.downloadUrl?.[4]?.quality}.mp3`
+      `${song?.name}-${song?.artists?.primary?.[0]?.name}-${song?.downloadUrl?.[4]?.quality}.mp3`,
     );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-    return (
+  return (
     <div className="relative w-full min-h-screen overflow-hidden text-white bg-gray-900">
       {/* Dynamic Blurred Background */}
       <AnimatePresence mode="popLayout">
@@ -328,7 +328,9 @@ export default function Player({ lyrics, ArtistSongs }) {
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url(${
-                song?.image?.[2]?.url || song?.image?.[1]?.url || "/placeholder.jpg"
+                song?.image?.[2]?.url ||
+                song?.image?.[1]?.url ||
+                "/placeholder.jpg"
               })`,
               filter: "blur(40px) brightness(0.5)",
               transform: "scale(1.2)", // Scale to hide blurred edges
@@ -353,12 +355,12 @@ export default function Player({ lyrics, ArtistSongs }) {
             className="bg-white/10 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 hover:scale-110 cursor-pointer transition-all border border-white/10 flex items-center justify-center group"
             aria-label="Go back"
           >
-            <ChevronDown 
-              size={20} 
-              className="rotate-90 text-white group-hover:text-white transition-colors" 
+            <ChevronDown
+              size={20}
+              className="rotate-90 text-white group-hover:text-white transition-colors"
             />
           </button>
-          
+
           <button
             onClick={() => {
               router.back();
@@ -366,9 +368,9 @@ export default function Player({ lyrics, ArtistSongs }) {
             className="bg-white/10 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 hover:scale-110 cursor-pointer transition-all border border-white/10 flex items-center justify-center group"
             aria-label="Close"
           >
-            <X 
-              size={20} 
-              className="text-white group-hover:text-white transition-colors" 
+            <X
+              size={20}
+              className="text-white group-hover:text-white transition-colors"
             />
           </button>
         </div>
@@ -465,73 +467,82 @@ export default function Player({ lyrics, ArtistSongs }) {
           >
             {song?.name}
           </h2>
-            <div className="w-full flex justify-center">
-  <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
-    {song?.artists?.primary?.length > 0 ? (
-      (() => {
-        const artists = song.artists.primary;
-        const visibleArtists = showAllArtists ? artists : artists.slice(0, 3);
-        const hasMore = artists.length > 3;
+          <div className="w-full flex justify-center">
+            <div className="text-gray-300 text-sm flex flex-wrap gap-1 justify-center text-center">
+              {song?.artists?.primary?.length > 0
+                ? (() => {
+                    const artists = song.artists.primary;
+                    const visibleArtists = showAllArtists
+                      ? artists
+                      : artists.slice(0, 3);
+                    const hasMore = artists.length > 3;
 
-        return (
-          <>
-            {visibleArtists.map((s, i) => (
-              <span key={s.id} className="flex">
-                <p
-                  onClick={() => router.push(`/artist/${s.id}`)}
-                  className="cursor-pointer font-bold hover:scale-105 transition-all text-gray-200"
-                >
-                  {s.name.trim()}
-                </p>
+                    return (
+                      <>
+                        {visibleArtists.map((s, i) => (
+                          <span key={s.id} className="flex">
+                            <p
+                              onClick={() => router.push(`/artist/${s.id}`)}
+                              className="cursor-pointer font-bold hover:scale-105 transition-all text-gray-200"
+                            >
+                              {s.name.trim()}
+                            </p>
 
-                {i < visibleArtists.length - 1 && <span>,</span>}
-              </span>
-            ))}
+                            {i < visibleArtists.length - 1 && <span>,</span>}
+                          </span>
+                        ))}
 
-            {/* Dots / Less button */}
-            {hasMore && !showAllArtists && (
-              <span
-                onClick={() => setShowAllArtists(true)}
-                className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
-              >
-                ...
-              </span>
-            )}
+                        {/* Dots / Less button */}
+                        {hasMore && !showAllArtists && (
+                          <span
+                            onClick={() => setShowAllArtists(true)}
+                            className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
+                          >
+                            ...
+                          </span>
+                        )}
 
-            {hasMore && showAllArtists && (
-              <span
-                onClick={() => setShowAllArtists(false)}
-                className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
-              >
-                {" "}less
-              </span>
-            )}
-          </>
-        );
-      })()
-    ) : (
-      "Unknown"
-    )}
-  </div>
-</div>
+                        {hasMore && showAllArtists && (
+                          <span
+                            onClick={() => setShowAllArtists(false)}
+                            className="cursor-pointer font-bold text-gray-400 hover:text-gray-200"
+                          >
+                            {" "}
+                            less
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()
+                : "Unknown"}
+            </div>
+          </div>
         </div>
 
-        {/* Progress */}
+        {/* Progress Bar */}
         <div className="w-full mt-4">
-          <div className="flex justify-between text-sm text-gray-300 mb-1">
-            <span className="font-bold">{formatTime(position)}</span>
-            <span className="font-bold">{formatTime(duration)}</span>
+          <div
+            ref={barRef}
+            className="relative h-1 w-full bg-white/20 rounded-full cursor-pointer"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setIsDragging(true);
+              updateSeek(e.clientX);
+            }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${(progress / duration) * 100 || 0}%`,
+                backgroundColor: accentColor,
+              }}
+            />
           </div>
-          <input
-            type="range"
-            min="0"
-            max={duration}
-            value={position}
-            step="0.5"
-            onChange={handleSeek}
-            className="w-full h-2 rounded-lg outline-none cursor-pointer"
-            style={{ backgroundColor: accentColor }}
-          />
+
+          <div className="flex justify-between text-[10px] text-white/60 mt-1">
+            <span>{formatTime(progress)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
         </div>
 
         {/* Controls */}
